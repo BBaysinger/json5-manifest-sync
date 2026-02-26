@@ -86,8 +86,18 @@ describe("isCliInvocation", () => {
 
   it("returns true for symlinked .bin-like invocation path", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-bin-"));
-    const modulePath = path.join(tempDir, "pkg", "dist", "json5-manifest-sync.js");
-    const binPath = path.join(tempDir, "node_modules", ".bin", "json5-manifest-sync");
+    const modulePath = path.join(
+      tempDir,
+      "pkg",
+      "dist",
+      "json5-manifest-sync.js",
+    );
+    const binPath = path.join(
+      tempDir,
+      "node_modules",
+      ".bin",
+      "json5-manifest-sync",
+    );
 
     fs.mkdirSync(path.dirname(modulePath), { recursive: true });
     fs.mkdirSync(path.dirname(binPath), { recursive: true });
