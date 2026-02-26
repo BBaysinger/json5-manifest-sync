@@ -1,0 +1,36 @@
+{
+  "name": "json5-manifest-sync",
+  "version": "0.1.0",
+  "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
+  "type": "module",
+  "main": "./dist/json5-manifest-sync.js",
+  "types": "./dist/json5-manifest-sync.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/json5-manifest-sync.d.ts",
+      "default": "./dist/json5-manifest-sync.js"
+    }
+  },
+  "bin": {
+    "json5-manifest-sync": "./dist/json5-manifest-sync.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "glob": "^11.0.1",
+    "ignore": "^7.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
