@@ -63,6 +63,26 @@ Run it:
 npm run sync:json5
 ```
 
+## Generated `package.json5` example
+
+Illustrative output (trimmed):
+
+```json5
+{
+  // Package name used by npm and consumers.
+  name: "consumer-app",
+  // Release version (keep in sync with git tags).
+  version: "1.2.3",
+  // Development and release scripts.
+  scripts: {
+    // Compile TypeScript to dist/.
+    build: "tsc -p tsconfig.json",
+  },
+}
+```
+
+For the current full output style, see this repo's live example: [`package.json5`](./package.json5).
+
 ### Options
 
 - `--no-empty-comment` or `--no-empty-comments`
