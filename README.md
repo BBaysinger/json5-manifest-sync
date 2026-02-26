@@ -34,7 +34,7 @@ Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 Install from a tag (recommended):
 
 ```bash
-npm install github:BBaysinger/json5-manifest-sync#v0.1.2
+npm install github:BBaysinger/json5-manifest-sync#v0.1.3
 ```
 
 Or from a branch during iteration:
@@ -69,11 +69,15 @@ npm run sync:json5
 - `--empty-comment=false`
 - env var: `SYNC_JSON5_ADD_EMPTY_COMMENT=false`
 
+### Formatting note
+
+In this repo, `package.json5` is ignored by Prettier (see `.prettierignore`) so manual comment/key style is preserved.
+
 ## Publishing workflow (GitHub-only)
 
 1. Commit changes in this repo.
 2. Bump version in `package.json`.
-3. Create and push a tag, for example `v0.1.2`.
+3. Create and push a tag, for example `v0.1.3`.
 4. In consuming projects, update dependency ref to that tag.
 
 Example dependency block in consumer:
@@ -81,15 +85,11 @@ Example dependency block in consumer:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "github:BBaysinger/json5-manifest-sync#v0.1.2"
+    "json5-manifest-sync": "github:BBaysinger/json5-manifest-sync#v0.1.3"
   }
 }
 ```
 
 ## Changelog
 
-### v0.1.2
-
-- Fixed CLI run detection to work when invoked via npm/yarn/pnpm bin shims and symlinks.
-- `npm run sync:json5` now executes reliably in consuming projects.
-- Preserved direct invocation behavior (`node dist/json5-manifest-sync.js`).
+See `CHANGELOG.md` for full release history.
