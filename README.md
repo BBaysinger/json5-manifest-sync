@@ -123,6 +123,9 @@ Recommended: exclude `package.json5` from Prettier (for example via `.prettierig
 
 Prettier's JSON5 formatter can remove quotes from valid keys, which makes `package.json5` less similar to canonical `package.json`. Ignoring `package.json5` helps preserve intentional key/comment style and reduces avoidable drift.
 
+> [!NOTE]
+> It would be nice if Prettier provided an option to preserve quoted keys in JSON5.
+
 ## Publishing workflow (GitHub-only)
 
 1. Commit changes in this repo.
