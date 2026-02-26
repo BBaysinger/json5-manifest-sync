@@ -1,6 +1,6 @@
 {
   "name": "json5-manifest-sync",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
   "author": {
     "name": "Bradley Baysinger",

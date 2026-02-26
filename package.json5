@@ -2,7 +2,7 @@
   // Package name used by npm and consumers.
   "name": "json5-manifest-sync",
   // Release version (keep in sync with git tags).
-  "version": "0.1.2",
+  "version": "0.1.3",
   // Short summary shown in package registries and tooling.
   "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
   // Package author metadata.
