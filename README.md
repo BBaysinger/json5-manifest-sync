@@ -67,16 +67,17 @@ npm run sync:json5
 
 Illustrative output (trimmed):
 
+<!-- prettier-ignore -->
 ```json5
 {
   // Package name used by npm and consumers.
-  name: "consumer-app",
+  "name": "consumer-app",
   // Release version (keep in sync with git tags).
-  version: "1.2.3",
+  "version": "1.2.3",
   // Development and release scripts.
-  scripts: {
+  "scripts": {
     // Compile TypeScript to dist/.
-    build: "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
   },
 }
 ```
