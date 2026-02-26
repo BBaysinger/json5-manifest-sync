@@ -359,6 +359,12 @@ export function syncJson5(
             for (const c of itemCommentInfo.preceding) {
               result.push(indent(c, level + indentSize));
             }
+          } else if (
+            addEmptyCommentIfMissing &&
+            !comments.hasOwnProperty(itemPath)
+          ) {
+            const autoComment = generateScriptComment();
+            result.push(indent(autoComment, level + indentSize));
           }
 
           // Add array item with optional trailing comment

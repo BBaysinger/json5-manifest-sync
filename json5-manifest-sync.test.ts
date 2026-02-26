@@ -47,4 +47,24 @@ describe("syncJson5", () => {
     expect(output).toContain('\n  //\n  "name": "json5-manifest-sync",');
     expect(output).toContain('\n  //\n  "type": "module",');
   });
+
+  it("adds spacer comments for array items when addEmptyCommentIfMissing is enabled", () => {
+    const existingJson5 = `{
+  "files": [
+    "dist"
+  ]
+}`;
+
+    const source = {
+      files: ["dist", "README.md"],
+    };
+
+    const output = syncJson5(existingJson5, source, {
+      addEmptyCommentIfMissing: true,
+    });
+
+    expect(output).toContain('"files": [');
+    expect(output).toContain('\n    //\n    "dist",');
+    expect(output).toContain('\n    //\n    "README.md",');
+  });
 });
