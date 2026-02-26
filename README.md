@@ -2,6 +2,28 @@
 
 Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers.
 
+## Quick Start
+
+```bash
+npm install github:BBaysinger/json5-manifest-sync#v0.1.3
+```
+
+Add a script in your project's `package.json`:
+
+```json
+{
+  "scripts": {
+    "sync:json5": "json5-manifest-sync"
+  }
+}
+```
+
+Run it:
+
+```bash
+npm run sync:json5
+```
+
 ## Why this exists
 
 `package.json` must be strict JSON, which means comments are invalid. That makes it hard to document complex scripts, dependency choices, or workspace settings directly in the manifest.
