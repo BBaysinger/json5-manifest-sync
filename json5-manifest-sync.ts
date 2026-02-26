@@ -477,10 +477,33 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
   }
 }
 
-const isDirectRun =
-  Boolean(process.argv[1]) &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+/**
+ * Determines whether this module is being executed as a CLI entrypoint.
+ *
+ * This supports direct Node execution and npm/pnpm/yarn .bin symlink paths by
+ * comparing normalized real paths when possible.
+ *
+ * @param argv1 - Entry script path (typically process.argv[1])
+ * @param moduleUrl - URL of this module (typically import.meta.url)
+ * @returns true when current process should run CLI behavior
+ */
+export function isCliInvocation(
+  argv1: string | undefined = process.argv[1],
+  moduleUrl: string = import.meta.url,
+): boolean {
+  if (!argv1) return false;
 
-if (isDirectRun) {
+  const modulePath = fileURLToPath(moduleUrl);
+  const entryPath = path.resolve(argv1);
+
+  try {
+    return fs.realpathSync(entryPath) === fs.realpathSync(modulePath);
+  } catch {
+    // Fall back to normalized absolute-path comparison if realpath fails.
+    return path.resolve(entryPath) === path.resolve(modulePath);
+  }
+}
+
+if (isCliInvocation()) {
   runCli();
 }

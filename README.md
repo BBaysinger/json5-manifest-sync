@@ -34,7 +34,7 @@ Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 Install from a tag (recommended):
 
 ```bash
-npm install github:BBaysinger/json5-manifest-sync#v0.1.0
+npm install github:BBaysinger/json5-manifest-sync#v0.1.2
 ```
 
 Or from a branch during iteration:
@@ -73,7 +73,7 @@ npm run sync:json5
 
 1. Commit changes in this repo.
 2. Bump version in `package.json`.
-3. Create and push a tag, for example `v0.1.1`.
+3. Create and push a tag, for example `v0.1.2`.
 4. In consuming projects, update dependency ref to that tag.
 
 Example dependency block in consumer:
@@ -81,7 +81,15 @@ Example dependency block in consumer:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "github:BBaysinger/json5-manifest-sync#v0.1.0"
+    "json5-manifest-sync": "github:BBaysinger/json5-manifest-sync#v0.1.2"
   }
 }
 ```
+
+## Changelog
+
+### v0.1.2
+
+- Fixed CLI run detection to work when invoked via npm/yarn/pnpm bin shims and symlinks.
+- `npm run sync:json5` now executes reliably in consuming projects.
+- Preserved direct invocation behavior (`node dist/json5-manifest-sync.js`).

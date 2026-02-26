@@ -1,6 +1,6 @@
 {
   "name": "json5-manifest-sync",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
   "author": {
     "name": "Bradley Baysinger",
@@ -20,7 +20,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
