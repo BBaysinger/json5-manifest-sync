@@ -126,14 +126,7 @@ Prettier's JSON5 formatter can remove quotes from valid keys, which makes `packa
 > [!NOTE]
 > It would be nice if Prettier provided an option to preserve quoted keys in JSON5.
 
-## Publishing workflow (GitHub-only)
-
-1. Commit changes in this repo.
-2. Bump version in `package.json`.
-3. Create and push a tag, for example `v0.1.3`.
-4. In consuming projects, update dependency ref to that tag.
-
-Example dependency block in consumer:
+## Example dependency block in consumer
 
 ```json
 {
