@@ -6,7 +6,11 @@ Keep a documented `package.json5` in sync with the real `package.json` used by N
 
 `package.json` must be strict JSON, which means comments are invalid. That makes it hard to document complex scripts, dependency choices, or workspace settings directly in the manifest.
 
+`package.json` is arguably the most important file in most JavaScript/TypeScript repositories. It drives install behavior, scripts, dependency policy, packaging, and release workflows—so it deserves clear inline documentation.
+
 At the same time, Node/npm/pnpm/yarn do not treat `package.json5` as a package manifest source. A JSON5 file can be great for human-readable documentation, but tooling still requires `package.json`.
+
+It would be great to see first-class support for JSON5-style manifests in npm/tooling over time, but today this project provides a practical bridge.
 
 This tool solves that gap by letting you maintain both:
 
