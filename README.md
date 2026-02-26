@@ -32,7 +32,7 @@ npm run sync:json5
 
 At the same time, Node/npm/pnpm/yarn do not treat `package.json5` as a package manifest source. A JSON5 file can be great for human-readable documentation, but tooling still requires `package.json`.
 
-It would be great to see first-class support for JSON5-style manifests in npm/tooling over time, but today this project provides a practical bridge.
+(It would be great to see first-class support for JSON5-style manifests in npm/tooling over time, but today this project provides a practical bridge.)
 
 This tool solves that gap by letting you maintain both:
 
