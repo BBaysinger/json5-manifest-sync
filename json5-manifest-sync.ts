@@ -33,12 +33,6 @@ import ignore from "ignore";
  *   double-quoted strings; unusual quoting/escaping can confuse it.
  * - Array item comment mapping is primarily intended for arrays of strings; arrays of
  *   objects/numbers will serialize correctly but per-item comment preservation is limited.
- *
- * TODO: Expose syncJson5(raw, source) as the core API, and let users pass their own
- * file loaders if they want.
- * TODO: Possibly support .jsonc as an option down the line, with a toggle.
- * TODO: Get this into an open source package for wider use
- *
  */
 
 export type SyncOptions = {
@@ -81,43 +75,6 @@ function indent(line: string, level = 0): string {
 }
 
 /**
- * Finds the end of a JSON block (object or array) starting at the given line.
- * Used for parsing complex nested structures in the original implementation.
- *
- * NOTE: This function is currently unused in the final implementation but
- * preserved for potential future use or alternative parsing strategies.
- *
- * @param lines - The full list of lines in the file
- * @param startIdx - The index where the block starts
- * @returns Object containing the index where the block ends
- */
-function _extractBlock(lines: string[], startIdx: number): { endIdx: number } {
-  let depth = 0;
-  for (let i = startIdx; i < lines.length; i++) {
-    const open = (lines[i].match(/[{\[]/g) || []).length;
-    const close = (lines[i].match(/[}\]]/g) || []).length;
-    depth += open - close;
-    if (depth <= 0) return { endIdx: i };
-  }
-  return { endIdx: lines.length - 1 };
-}
-
-/**
- * Matches and extracts a JSON key from a line using simple regex.
- * Used in earlier iterations but replaced by the current parsing logic.
- *
- * NOTE: This function is currently unused in the final implementation but
- * preserved for reference or alternative parsing approaches.
- *
- * @param line - A single line of text
- * @returns The matched key name, or null if not found
- */
-function _matchKey(line: string): string | null {
-  const match = line.match(/^[ \t]*["']?([a-zA-Z0-9_\-$@]+)["']?\s*:/);
-  return match ? match[1] : null;
-}
-
-/**
  * Parses a JSON5 file and builds a comment map with path-based indexing.
  *
  * This is the core parsing function that:
@@ -141,7 +98,7 @@ function buildCommentMap(
     { preceding: string[]; trailing?: string }
   > = {};
 
-  // State tracking for nested structure parsing (now using curly braces/brackets, not indentation)
+  // State tracking for nested structure parsing.
   const pathStack: string[] = [];
   const arrayIndexStack: number[] = [];
   let bufferedComments: string[] = [];
@@ -186,7 +143,7 @@ function buildCommentMap(
     }
   }
 
-  // Main parsing loop - processes each line to build the comment map
+  // Process each line and associate comments with object/array paths.
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
@@ -248,7 +205,7 @@ function buildCommentMap(
       continue;
     }
 
-    // Handle regular object keys - supports scoped packages with improved regex
+    // Handle regular object keys.
     const keyMatch = line.match(/^\s*(["']?)([^"']+)\1\s*:/);
     if (keyMatch) {
       const key = keyMatch[2];
@@ -274,7 +231,7 @@ function buildCommentMap(
       bufferedComments = [];
     }
 
-    // Handle closing brackets to maintain proper nesting (using curly braces/brackets)
+    // Handle closing brackets to maintain proper nesting.
     if (
       trimmed === "}" ||
       trimmed === "}," ||
@@ -332,18 +289,12 @@ export function syncJson5(
       : true;
 
   /**
-   * Recursively writes a JSON object with proper formatting and preserved comments.
+   * Recursively writes an object in normalized JSON5 style with mapped comments.
    *
-   * This function handles the reconstruction of the JSON5 structure by:
-   * - Applying comments from the comment map to their appropriate locations
-   * - Maintaining consistent indentation and formatting
-   * - Adding trailing commas to all elements for version control benefits
-   * - Handling nested objects, arrays, and primitive values appropriately
-   *
-   * @param obj - The object to write (from canonical JSON)
-   * @param path - Dot-notation path to the current object context
+   * @param obj - Object subtree from canonical JSON
+   * @param path - Dot-notation path for comment lookups
    * @param level - Current indentation level in spaces
-   * @returns Array of formatted lines representing this object
+   * @returns Formatted output lines for this subtree
    */
   function writeObject(obj: unknown, path: string[] = [], level = 2): string[] {
     const result: string[] = [];
@@ -444,6 +395,14 @@ export function syncJson5(
 // - Applies root .gitignore rules to skip excluded files
 // - Performs synchronization for each valid pair
 
+/**
+ * CLI entrypoint.
+ *
+ * Scans from the current working directory and synchronizes any
+ * `package.json5` files that have a sibling `package.json`.
+ *
+ * @param args - Optional CLI arguments (defaults to process argv slice)
+ */
 export function runCli(args: string[] = process.argv.slice(2)): void {
   const rootDir = process.cwd();
   const ig = ignore();

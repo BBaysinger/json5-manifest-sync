@@ -1,8 +1,33 @@
 # json5-manifest-sync
 
-Sync `package.json5` files from canonical `package.json` files while preserving mapped line comments.
+Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers.
+
+## Why this exists
+
+`package.json` must be strict JSON, which means comments are invalid. That makes it hard to document complex scripts, dependency choices, or workspace settings directly in the manifest.
+
+At the same time, Node/npm/pnpm/yarn do not treat `package.json5` as a package manifest source. A JSON5 file can be great for human-readable documentation, but tooling still requires `package.json`.
+
+This tool solves that gap by letting you maintain both:
+
+- `package.json` as the canonical, machine-consumed manifest
+- `package.json5` as the human-documented companion file
+
+Then it synchronizes `package.json5` from `package.json` while preserving mapped `//` comments where possible.
+
+## What it does
+
+- Finds `package.json` files recursively (excluding `node_modules`)
+- Skips paths ignored by your root `.gitignore`
+- For each matching `package.json5`, rewrites values from canonical `package.json`
+- Preserves/migrates mapped `//` comments for keys and supported array items
+- Writes stable JSON5 formatting with trailing commas for cleaner diffs
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
+
+## Author
+
+Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 
 ## Install from GitHub
 

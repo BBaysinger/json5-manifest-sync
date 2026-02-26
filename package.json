@@ -2,6 +2,10 @@
   "name": "json5-manifest-sync",
   "version": "0.1.0",
   "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
+  "author": {
+    "name": "Bradley Baysinger",
+    "url": "https://github.com/BBaysinger"
+  },
   "type": "module",
   "main": "./dist/json5-manifest-sync.js",
   "types": "./dist/json5-manifest-sync.d.ts",
