@@ -26,6 +26,8 @@
     "build": "tsc -p tsconfig.json",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepare": "npm run build"
   },
   "engines": {
@@ -38,6 +40,7 @@
   "devDependencies": {
     "@types/node": "^22.13.10",
     "prettier": "^3.8.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^2.1.9"
   }
 }
