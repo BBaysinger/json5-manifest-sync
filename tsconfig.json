@@ -9,7 +9,5 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": [
-    "json5-manifest-sync.ts"
-  ]
+  "include": ["json5-manifest-sync.ts"]
 }

@@ -24,6 +24,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "prepare": "npm run build"
   },
   "engines": {
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
+    "prettier": "^3.8.1",
     "typescript": "^5.8.2"
   }
 }
