@@ -118,7 +118,9 @@ For the current full output style, see this repo's live example: [`package.json5
 
 ### Formatting note
 
-In this repo, `package.json5` is ignored by Prettier (see `.prettierignore`) so manual comment/key style is preserved.
+Recommended: exclude `package.json5` from Prettier (for example via `.prettierignore`).
+
+Prettier's JSON5 formatter can remove quotes from valid keys, which makes `package.json5` less similar to canonical `package.json`. Ignoring `package.json5` helps preserve intentional key/comment style and reduces avoidable drift.
 
 ## Publishing workflow (GitHub-only)
 
