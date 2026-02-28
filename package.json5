@@ -39,7 +39,7 @@
     "dist",
     // Package usage and installation documentation.
     "README.md",
-    //
+    // Release notes and version history.
     "CHANGELOG.md",
   ],
   // Development and release scripts.
