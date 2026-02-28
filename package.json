@@ -25,6 +25,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "sync:json5": "node ./dist/json5-manifest-sync.js",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "test": "vitest run",

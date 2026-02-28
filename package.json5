@@ -46,6 +46,8 @@
   "scripts": {
     // Compile TypeScript to dist/.
     "build": "tsc -p tsconfig.json",
+    // Synchronize package.json5 from canonical package.json.
+    "sync:json5": "node ./dist/json5-manifest-sync.js",
     // Format all project files.
     "format": "prettier . --write",
     // Validate formatting in CI.
