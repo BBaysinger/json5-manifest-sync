@@ -5,7 +5,7 @@ Keep a documented `package.json5` in sync with the real `package.json` used by N
 ## Quick Start
 
 ```bash
-npm install github:BBaysinger/json5-manifest-sync#v0.1.3
+npm install --save-dev json5-manifest-sync
 ```
 
 Add a script in your project's `package.json`:
@@ -56,21 +56,25 @@ Repository: https://github.com/BBaysinger/json5-manifest-sync
 
 Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 
-## Install from GitHub
-
-Install from a tag (recommended):
+## Install from npm (recommended)
 
 ```bash
-npm install github:BBaysinger/json5-manifest-sync#v0.1.3
+npm install --save-dev json5-manifest-sync
 ```
 
-Or from a branch during iteration:
+Global install (optional):
+
+```bash
+npm install -g json5-manifest-sync
+```
+
+## Install from GitHub (alternative)
+
+Use this if you want an unreleased branch or tag:
 
 ```bash
 npm install github:BBaysinger/json5-manifest-sync#main
 ```
-
-Because this repo defines a `prepare` script, npm will build TypeScript during git-based install.
 
 ## Use in a project
 
@@ -131,7 +135,7 @@ Prettier's JSON5 formatter can remove quotes from valid keys, which makes `packa
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "github:BBaysinger/json5-manifest-sync#v0.1.3"
+    "json5-manifest-sync": "^0.1.3"
   }
 }
 ```
