@@ -1,6 +1,6 @@
 # json5-manifest-sync
 
-Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers.
+Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers, including `version` updates.
 
 ## Quick Start
 
@@ -41,13 +41,15 @@ This tool solves that gap by letting you maintain both:
 - `package.json5` as the human-documented companion file
 
 Then it synchronizes `package.json5` from `package.json` while preserving mapped `//` comments where possible.
+When values like `version`, `scripts`, or dependency versions change in `package.json`, those updates are propagated into `package.json5`.
 
 ## What it does
 
 - Finds `package.json` files recursively (excluding `node_modules`)
 - Skips paths ignored by your root `.gitignore`
-- For each matching `package.json5`, rewrites values from canonical `package.json`
+- For each matching `package.json5`, rewrites values from canonical `package.json` (including `version`, scripts, dependencies, and other manifest fields)
 - Preserves/migrates mapped `//` comments for keys and supported array items
+- Inserts a blank `//` comment line before keys with no mapped comment (enabled by default)
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
@@ -117,6 +119,8 @@ For the current full output style, see this repo's live example: [`package.json5
 
 ### Options
 
+By default, the tool inserts an empty `//` line before keys that do not already have a mapped comment. Disable that behavior with one of the following:
+
 - `--no-empty-comment` or `--no-empty-comments`
 - `--empty-comment=false`
 - env var: `SYNC_JSON5_ADD_EMPTY_COMMENT=false`
@@ -129,6 +133,14 @@ Prettier's JSON5 formatter can remove quotes from valid keys, which makes `packa
 
 > [!NOTE]
 > It would be nice if Prettier provided an option to preserve quoted keys in JSON5.
+
+### AI assist tip
+
+After running `sync:json5`, you can ask an AI coding assistant to fill placeholder comment lines.
+
+Example prompt:
+
+> "Complete empty `//` comment lines in `package.json5` with concise, field-specific comments."
 
 ## Example dependency block in consumer
 
