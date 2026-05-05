@@ -52,6 +52,12 @@ When values like `version`, `scripts`, or dependency versions change in `package
 - Inserts a blank `//` comment line before keys with no mapped comment (enabled by default)
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
 
+### Current limitations
+
+- Per-item comment preservation is most reliable for arrays of strings.
+- Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped or replaced by an empty `//` spacer on sync.
+- If you prefer to avoid regenerated blank spacer comments in those cases, run the CLI with `--no-empty-comment`.
+
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
 ## Author
