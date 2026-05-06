@@ -153,4 +153,42 @@ describe("runCli", () => {
     expect(updated).toContain('"version": "1.2.3",');
     expect(updated).toContain('"build": "tsc -p tsconfig.json",');
   });
+
+  it("removes generated blank comments with the clearer CLI flag", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-flags-"));
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(
+        {
+          name: "consumer-app",
+          type: "module",
+        },
+        null,
+        2,
+      ),
+    );
+
+    fs.writeFileSync(
+      packageJson5Path,
+      `{
+  "name": "consumer-app"
+}`,
+    );
+
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      runCli(["--remove-empty-comments"]);
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const updated = fs.readFileSync(packageJson5Path, "utf8");
+    expect(updated).not.toContain("\n  //\n");
+    expect(updated).toContain('"name": "consumer-app",');
+    expect(updated).toContain('"type": "module",');
+  });
 });

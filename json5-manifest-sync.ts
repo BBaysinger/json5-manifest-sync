@@ -45,8 +45,9 @@ export type SyncOptions = {
    *   //
    *   "type": "module",
    *
-   * Defaults to true. Can be disabled via CLI flag `--no-empty-comment` or the
-   * environment variable `SYNC_JSON5_ADD_EMPTY_COMMENT=false`.
+   * Defaults to true. Can be disabled via CLI flags like
+   * `--remove-empty-comments` or the environment variable
+   * `SYNC_JSON5_ADD_EMPTY_COMMENT=false`.
    */
   addEmptyCommentIfMissing?: boolean;
 };
@@ -437,9 +438,16 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     addEmptyCommentIfMissing = false;
   }
 
-  // CLI toggles: --no-empty-comment, --empty-comment=false
+  // CLI toggles: --remove-empty-comments, --remove-blank-comments
   for (const arg of args) {
-    if (arg === "--no-empty-comment" || arg === "--no-empty-comments") {
+    if (
+      arg === "--remove-empty-comment" ||
+      arg === "--remove-empty-comments" ||
+      arg === "--remove-blank-comment" ||
+      arg === "--remove-blank-comments" ||
+      arg === "--no-empty-comment" ||
+      arg === "--no-empty-comments"
+    ) {
       addEmptyCommentIfMissing = false;
     } else if (arg.startsWith("--empty-comment=")) {
       const v = arg.split("=", 2)[1]?.toLowerCase();

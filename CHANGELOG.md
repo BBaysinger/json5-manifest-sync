@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.4] - 2026-05-05
+
+### Changed
+
+- Renamed the CLI option for suppressing generated blank `//` spacer comments to clearer `--remove-empty-comments` and `--remove-blank-comments` forms.
+- Kept legacy `--no-empty-comment` and `--no-empty-comments` aliases working for compatibility.
+
 ## [0.1.3] - 2026-02-27
 
 ### Added

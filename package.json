@@ -1,6 +1,6 @@
 {
   "name": "json5-manifest-sync",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Sync package.json5 files from canonical package.json while preserving key comments.",
   "author": {
     "name": "Bradley Baysinger",
@@ -26,8 +26,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "sync:json5": "node ./dist/json5-manifest-sync.js",
+    "warn:blank-comments": "node ./scripts/warn-blank-comments.mjs",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "precommit": "node ./scripts/precommit.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build"
@@ -36,13 +38,13 @@
     "node": ">=18"
   },
   "dependencies": {
-    "glob": "^11.0.1",
-    "ignore": "^7.0.4"
+    "glob": "^13.0.6",
+    "ignore": "^7.0.5"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
-    "prettier": "^3.8.1",
-    "typescript": "^5.8.2",
-    "vitest": "^2.1.9"
+    "@types/node": "^25.6.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }

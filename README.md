@@ -56,7 +56,7 @@ When values like `version`, `scripts`, or dependency versions change in `package
 
 - Per-item comment preservation is most reliable for arrays of strings.
 - Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped or replaced by an empty `//` spacer on sync.
-- If you prefer to avoid regenerated blank spacer comments in those cases, run the CLI with `--no-empty-comment`.
+- If you prefer to avoid regenerated blank spacer comments in those cases, run the CLI with `--remove-empty-comments`.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
@@ -127,9 +127,11 @@ For the current full output style, see this repo's live example: [`package.json5
 
 By default, the tool inserts an empty `//` line before keys that do not already have a mapped comment. Disable that behavior with one of the following:
 
-- `--no-empty-comment` or `--no-empty-comments`
+- `--remove-empty-comments` or `--remove-blank-comments`
 - `--empty-comment=false`
 - env var: `SYNC_JSON5_ADD_EMPTY_COMMENT=false`
+
+Legacy aliases `--no-empty-comment` and `--no-empty-comments` are still accepted for compatibility.
 
 ### Formatting note
 
@@ -143,6 +145,8 @@ Prettier's JSON5 formatter can remove quotes from valid keys, which makes `packa
 ### AI assist tip
 
 After running `sync:json5`, you can ask an AI coding assistant to fill placeholder comment lines.
+
+If you use this repo's `precommit` workflow, it warns when `package.json5` still contains blank `//` placeholder comments. Suppress just that warning for a given run with `npm run precommit -- --suppress-blank-comment-warning`.
 
 Example prompt:
 
