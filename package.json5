@@ -31,7 +31,7 @@
   // CLI command mapping installed in node_modules/.bin.
   "bin": {
     // Executable command name and target script.
-    "json5-manifest-sync": "./dist/json5-manifest-sync.js",
+    "json5-manifest-sync": "dist/json5-manifest-sync.js",
   },
   // Files published with the package.
   "files": [
