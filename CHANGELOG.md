@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.1] - 2026-05-06
+
+### Changed
+
+- Republished the `0.2.0` blank-comment workflow changes as `0.2.1` so the npm release can proceed with a new package version.
+
 ## [0.2.0] - 2026-05-06
 
 ### Breaking Changes
