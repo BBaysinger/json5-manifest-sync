@@ -35,22 +35,62 @@ import ignore from "ignore";
  *   objects/numbers will serialize correctly but per-item comment preservation is limited.
  */
 
+export type BlankCommentMode = "preserve" | "fill" | "remove";
+
 export type SyncOptions = {
   /**
-   * When true, insert a blank comment line (`//`) before any key that has no
-   * preceding comment captured from the existing JSON5. This helps visually
-   * separate entries like:
+   * Controls how blank comment lines (`//`) are handled.
    *
-   *   "private": true,
-   *   //
-   *   "type": "module",
+   * - `preserve`: keep existing blank comment lines, but do not add new ones
+   * - `fill`: keep existing blank comment lines and add them where comments are omitted
+   * - `remove`: remove blank comment lines from the output
    *
-   * Defaults to true. Can be disabled via CLI flags like
-   * `--remove-empty-comments` or the environment variable
-   * `SYNC_JSON5_ADD_EMPTY_COMMENT=false`.
+   * Defaults to `preserve`.
    */
-  addEmptyCommentIfMissing?: boolean;
+  blankCommentMode?: BlankCommentMode;
 };
+
+function isBlankCommentLine(line: string): boolean {
+  return /^\s*\/\/\s*$/.test(line);
+}
+
+function normalizePrecedingComments(
+  preceding: string[] | undefined,
+  blankCommentMode: BlankCommentMode,
+): string[] {
+  const comments = preceding ?? [];
+  if (blankCommentMode !== "remove") {
+    return comments;
+  }
+
+  return comments.filter((line) => !isBlankCommentLine(line));
+}
+
+function collectBlankCommentLineNumbers(raw: string): number[] {
+  return raw
+    .split("\n")
+    .map((line, index) => ({ line, lineNumber: index + 1 }))
+    .filter(({ line }) => isBlankCommentLine(line))
+    .map(({ lineNumber }) => lineNumber);
+}
+
+function warnAboutBlankComments(
+  filePath: string,
+  blankCommentLines: number[],
+): void {
+  if (blankCommentLines.length === 0) {
+    return;
+  }
+
+  const preview = blankCommentLines.slice(0, 8).join(", ");
+  const remainder = blankCommentLines.length > 8 ? ", ..." : "";
+  const plural =
+    blankCommentLines.length === 1 ? "placeholder" : "placeholders";
+
+  console.warn(
+    `[warn:blank-comments] ${path.basename(filePath)} contains ${blankCommentLines.length} blank comment ${plural} at line${blankCommentLines.length === 1 ? "" : "s"} ${preview}${remainder}. Fill them in with real notes, or rerun with --blank-comments=remove if you do not want placeholders.`,
+  );
+}
 
 /**
  * Quotes an object key for consistent JSON5 formatting.
@@ -280,14 +320,11 @@ function generateScriptComment(): string {
 export function syncJson5(
   raw: string,
   source: Record<string, unknown>,
-  options: SyncOptions = { addEmptyCommentIfMissing: true },
+  options: SyncOptions = { blankCommentMode: "preserve" },
 ): string {
   const lines = raw.split("\n");
   const comments = buildCommentMap(lines);
-  const addEmptyCommentIfMissing =
-    options.addEmptyCommentIfMissing !== undefined
-      ? options.addEmptyCommentIfMissing
-      : true;
+  const blankCommentMode = options.blankCommentMode ?? "preserve";
 
   /**
    * Recursively writes an object in normalized JSON5 style with mapped comments.
@@ -315,14 +352,18 @@ export function syncJson5(
       const comma = ","; // Always add trailing comma for version control benefits
 
       const commentInfo = comments[fullPath];
+      const precedingComments = normalizePrecedingComments(
+        commentInfo?.preceding,
+        blankCommentMode,
+      );
 
       // Add any preceding comments above this key
-      if (commentInfo?.preceding && commentInfo.preceding.length > 0) {
-        for (const c of commentInfo.preceding) {
+      if (precedingComments.length > 0) {
+        for (const c of precedingComments) {
           result.push(indent(c, level));
         }
       } else if (
-        addEmptyCommentIfMissing &&
+        blankCommentMode === "fill" &&
         !comments.hasOwnProperty(fullPath)
       ) {
         // No preceding comment captured — optionally add a blank one for spacing
@@ -354,14 +395,18 @@ export function syncJson5(
         for (let j = 0; j < val.length; j++) {
           const itemPath = [...path, key, j.toString()].join(".");
           const itemCommentInfo = comments[itemPath];
+          const itemPrecedingComments = normalizePrecedingComments(
+            itemCommentInfo?.preceding,
+            blankCommentMode,
+          );
 
           // Add preceding comments for this array item
-          if (itemCommentInfo?.preceding) {
-            for (const c of itemCommentInfo.preceding) {
+          if (itemPrecedingComments.length > 0) {
+            for (const c of itemPrecedingComments) {
               result.push(indent(c, level + indentSize));
             }
           } else if (
-            addEmptyCommentIfMissing &&
+            blankCommentMode === "fill" &&
             !comments.hasOwnProperty(itemPath)
           ) {
             const autoComment = generateScriptComment();
@@ -427,33 +472,18 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     absolute: true,
   });
 
-  // Parse simple CLI flags / env for options
-  let addEmptyCommentIfMissing = true;
+  // Parse CLI flags for options
+  let blankCommentMode: BlankCommentMode = "preserve";
+  let warnOnBlankComments = false;
 
-  // Env toggle: SYNC_JSON5_ADD_EMPTY_COMMENT=false
-  if (
-    typeof process.env.SYNC_JSON5_ADD_EMPTY_COMMENT === "string" &&
-    process.env.SYNC_JSON5_ADD_EMPTY_COMMENT.toLowerCase() === "false"
-  ) {
-    addEmptyCommentIfMissing = false;
-  }
-
-  // CLI toggles: --remove-empty-comments, --remove-blank-comments
   for (const arg of args) {
-    if (
-      arg === "--remove-empty-comment" ||
-      arg === "--remove-empty-comments" ||
-      arg === "--remove-blank-comment" ||
-      arg === "--remove-blank-comments" ||
-      arg === "--no-empty-comment" ||
-      arg === "--no-empty-comments"
-    ) {
-      addEmptyCommentIfMissing = false;
-    } else if (arg.startsWith("--empty-comment=")) {
+    if (arg.startsWith("--blank-comments=")) {
       const v = arg.split("=", 2)[1]?.toLowerCase();
-      if (v === "false" || v === "0" || v === "no") {
-        addEmptyCommentIfMissing = false;
+      if (v === "preserve" || v === "fill" || v === "remove") {
+        blankCommentMode = v;
       }
+    } else if (arg === "--warn-blank-comments") {
+      warnOnBlankComments = true;
     }
   }
 
@@ -476,12 +506,19 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     const rawJson5 = fs.readFileSync(json5Path, "utf8");
     const sourceJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
     const updated = syncJson5(rawJson5, sourceJson, {
-      addEmptyCommentIfMissing,
+      blankCommentMode,
     });
 
     // Write the synchronized result
     fs.writeFileSync(json5Path, updated);
     console.info(`✅ Synced ${relPath} → ${path.basename(json5Path)}`);
+
+    if (warnOnBlankComments && blankCommentMode !== "remove") {
+      warnAboutBlankComments(
+        json5Path,
+        collectBlankCommentLineNumbers(updated),
+      );
+    }
   }
 }
 

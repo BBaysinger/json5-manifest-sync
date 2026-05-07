@@ -2,12 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
-## [0.1.4] - 2026-05-05
+## [0.2.0] - 2026-05-06
+
+### Breaking Changes
+
+- The default blank-comment mode is now `preserve` instead of the previous placeholder-generating behavior. Existing users who want generated blank `//` lines must now pass `--blank-comments=fill`.
 
 ### Changed
 
-- Renamed the CLI option for suppressing generated blank `//` spacer comments to clearer `--remove-empty-comments` and `--remove-blank-comments` forms.
-- Kept legacy `--no-empty-comment` and `--no-empty-comments` aliases working for compatibility.
+- Replaced the old blank-comment toggle with `--blank-comments=preserve|fill|remove`.
+- Changed the default blank-comment mode to `preserve` so sync no longer introduces placeholder `//` lines unless requested.
+- Added `--warn-blank-comments` to warn after sync when blank `//` placeholders remain.
 
 ## [0.1.3] - 2026-02-27
 

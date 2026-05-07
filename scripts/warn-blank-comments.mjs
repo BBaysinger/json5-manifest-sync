@@ -29,5 +29,5 @@ const remainder = blankCommentLines.length > 8 ? ", ..." : "";
 const plural = blankCommentLines.length === 1 ? "placeholder" : "placeholders";
 
 console.warn(
-  `[warn:blank-comments] package.json5 contains ${blankCommentLines.length} blank comment ${plural} at line${blankCommentLines.length === 1 ? "" : "s"} ${preview}${remainder}. Fill them in with real notes, or use --remove-empty-comments if you do not want generated placeholders.`,
+  `[warn:blank-comments] package.json5 contains ${blankCommentLines.length} blank comment ${plural} at line${blankCommentLines.length === 1 ? "" : "s"} ${preview}${remainder}. Fill them in with real notes, or use --blank-comments=remove if you do not want placeholders.`,
 );

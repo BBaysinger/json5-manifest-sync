@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -24,7 +24,7 @@ describe("syncJson5", () => {
     };
 
     const output = syncJson5(existingJson5, source, {
-      addEmptyCommentIfMissing: false,
+      blankCommentMode: "preserve",
     });
 
     expect(output).toContain("// package version used by releases");
@@ -34,7 +34,7 @@ describe("syncJson5", () => {
     expect(output).toContain('"ignore",');
   });
 
-  it("adds spacer comments when addEmptyCommentIfMissing is enabled", () => {
+  it("fills omitted object comments when blankCommentMode is fill", () => {
     const existingJson5 = `{
   "name": "json5-manifest-sync"
 }`;
@@ -45,14 +45,14 @@ describe("syncJson5", () => {
     };
 
     const output = syncJson5(existingJson5, source, {
-      addEmptyCommentIfMissing: true,
+      blankCommentMode: "fill",
     });
 
     expect(output).toContain('\n  //\n  "name": "json5-manifest-sync",');
     expect(output).toContain('\n  //\n  "type": "module",');
   });
 
-  it("adds spacer comments for array items when addEmptyCommentIfMissing is enabled", () => {
+  it("fills omitted array item comments when blankCommentMode is fill", () => {
     const existingJson5 = `{
   "files": [
     "dist"
@@ -64,12 +64,56 @@ describe("syncJson5", () => {
     };
 
     const output = syncJson5(existingJson5, source, {
-      addEmptyCommentIfMissing: true,
+      blankCommentMode: "fill",
     });
 
     expect(output).toContain('"files": [');
     expect(output).toContain('\n    //\n    "dist",');
     expect(output).toContain('\n    //\n    "README.md",');
+  });
+
+  it("preserves existing blank comments without filling omitted ones in preserve mode", () => {
+    const existingJson5 = `{
+  //
+  "name": "json5-manifest-sync"
+}`;
+
+    const source = {
+      name: "json5-manifest-sync",
+      type: "module",
+    };
+
+    const output = syncJson5(existingJson5, source, {
+      blankCommentMode: "preserve",
+    });
+
+    expect(output).toContain('\n  //\n  "name": "json5-manifest-sync",');
+    expect(output).not.toContain('\n  //\n  "type": "module",');
+    expect(output).toContain('\n  "type": "module",');
+  });
+
+  it("removes blank comments entirely in remove mode", () => {
+    const existingJson5 = `{
+  //
+  "name": "json5-manifest-sync",
+  "files": [
+    //
+    "dist"
+  ]
+}`;
+
+    const source = {
+      name: "json5-manifest-sync",
+      files: ["dist", "README.md"],
+    };
+
+    const output = syncJson5(existingJson5, source, {
+      blankCommentMode: "remove",
+    });
+
+    expect(output).not.toContain("\n  //\n");
+    expect(output).not.toContain("\n    //\n");
+    expect(output).toContain('"README.md",');
   });
 });
 
@@ -154,7 +198,7 @@ describe("runCli", () => {
     expect(updated).toContain('"build": "tsc -p tsconfig.json",');
   });
 
-  it("removes generated blank comments with the clearer CLI flag", () => {
+  it("removes blank comments with blank-comments=remove", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-flags-"));
     const packageJsonPath = path.join(tempDir, "package.json");
     const packageJson5Path = path.join(tempDir, "package.json5");
@@ -181,7 +225,7 @@ describe("runCli", () => {
     const previousCwd = process.cwd();
     try {
       process.chdir(tempDir);
-      runCli(["--remove-empty-comments"]);
+      runCli(["--blank-comments=remove"]);
     } finally {
       process.chdir(previousCwd);
     }
@@ -190,5 +234,89 @@ describe("runCli", () => {
     expect(updated).not.toContain("\n  //\n");
     expect(updated).toContain('"name": "consumer-app",');
     expect(updated).toContain('"type": "module",');
+  });
+
+  it("warns about blank comments after sync when requested", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-warn-"));
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(
+        {
+          name: "consumer-app",
+          type: "module",
+        },
+        null,
+        2,
+      ),
+    );
+
+    fs.writeFileSync(
+      packageJson5Path,
+      `{
+  "name": "consumer-app"
+}`,
+    );
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      runCli(["--blank-comments=fill", "--warn-blank-comments"]);
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("[warn:blank-comments]");
+    expect(warnSpy.mock.calls[0]?.[0]).toContain(
+      "package.json5 contains 2 blank comment placeholders",
+    );
+    warnSpy.mockRestore();
+  });
+
+  it("warns about preserved blank comments in preserve mode", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-preserve-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(
+        {
+          name: "consumer-app",
+          type: "module",
+        },
+        null,
+        2,
+      ),
+    );
+
+    fs.writeFileSync(
+      packageJson5Path,
+      `{
+  //
+  "name": "consumer-app"
+}`,
+    );
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      runCli(["--blank-comments=preserve", "--warn-blank-comments"]);
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const updated = fs.readFileSync(packageJson5Path, "utf8");
+    expect(updated).toContain('\n  //\n  "name": "consumer-app",');
+    expect(updated).not.toContain('\n  //\n  "type": "module",');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    warnSpy.mockRestore();
   });
 });

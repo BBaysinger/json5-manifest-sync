@@ -49,14 +49,16 @@ When values like `version`, `scripts`, or dependency versions change in `package
 - Skips paths ignored by your root `.gitignore`
 - For each matching `package.json5`, rewrites values from canonical `package.json` (including `version`, scripts, dependencies, and other manifest fields)
 - Preserves/migrates mapped `//` comments for keys and supported array items
-- Inserts a blank `//` comment line before keys with no mapped comment (enabled by default)
+- Supports three blank-comment modes: `preserve`, `fill`, and `remove`
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
 
 ### Current limitations
 
 - Per-item comment preservation is most reliable for arrays of strings.
-- Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped or replaced by an empty `//` spacer on sync.
-- If you prefer to avoid regenerated blank spacer comments in those cases, run the CLI with `--remove-empty-comments`.
+- Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped.
+- Use `--blank-comments=preserve` to keep existing blank `//` lines without adding new ones.
+- Use `--blank-comments=fill` to add blank `//` placeholders where comments are omitted.
+- Use `--blank-comments=remove` to strip blank `//` lines from the output.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
@@ -125,13 +127,15 @@ For the current full output style, see this repo's live example: [`package.json5
 
 ### Options
 
-By default, the tool inserts an empty `//` line before keys that do not already have a mapped comment. Disable that behavior with one of the following:
+By default, the tool runs with `--blank-comments=preserve`.
 
-- `--remove-empty-comments` or `--remove-blank-comments`
-- `--empty-comment=false`
-- env var: `SYNC_JSON5_ADD_EMPTY_COMMENT=false`
+Choose a blank-comment mode with one of the following:
 
-Legacy aliases `--no-empty-comment` and `--no-empty-comments` are still accepted for compatibility.
+- `--blank-comments=preserve`
+- `--blank-comments=fill`
+- `--blank-comments=remove`
+
+To warn after sync when blank `//` placeholders remain, add `--warn-blank-comments`. That warning applies to `preserve` and `fill`; `remove` strips those lines.
 
 ### Formatting note
 
