@@ -47,7 +47,7 @@
     // Compile TypeScript to dist/.
     "build": "tsc -p tsconfig.json",
     // Synchronize package.json5 from canonical package.json.
-    "sync:json5": "node ./dist/json5-manifest-sync.js",
+    "sync:json5": "node ./dist/json5-manifest-sync.js --blank-comments=fill",
     // Warn when package.json5 still has placeholder comment lines.
     "warn:blank-comments": "node ./scripts/warn-blank-comments.mjs",
     // Format all project files.

@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "sync:json5": "node ./dist/json5-manifest-sync.js",
+    "sync:json5": "node ./dist/json5-manifest-sync.js --blank-comments=fill",
     "warn:blank-comments": "node ./scripts/warn-blank-comments.mjs",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
