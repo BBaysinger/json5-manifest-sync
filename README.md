@@ -34,6 +34,8 @@ At the same time, Node/npm/pnpm/yarn do not treat `package.json5` as a package m
 
 This is also why the long-running Yarn Berry discussion about comment-friendly manifests is relevant here: [yarnpkg/berry#241](https://github.com/yarnpkg/berry/issues/241) describes the same underlying need, along with the ecosystem compatibility constraints that make a companion `package.json5` approach useful today.
 
+There is also a long-running Stack Overflow discussion around the same practical question from the npm side: [How do I add comments to package.json for npm install?](https://stackoverflow.com/questions/14221579/how-do-i-add-comments-to-package-json-for-npm-install/79939348#79939348). It is a useful community reference for why teams keep reaching for comment-friendly manifest workflows even though `package.json` itself must remain strict JSON.
+
 > [!NOTE]
 > It would be great to see first-class support for JSON5-style manifests in npm/tooling over time, but today this project provides a practical bridge.
 
