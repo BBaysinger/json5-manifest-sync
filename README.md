@@ -58,9 +58,6 @@ When values like `version`, `scripts`, or dependency versions change in `package
 
 - Per-item comment preservation is most reliable for arrays of strings.
 - Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped.
-- Use `--blank-comments=preserve` to keep existing blank `//` lines without adding new ones.
-- Use `--blank-comments=fill` to add blank `//` placeholders where comments are omitted.
-- Use `--blank-comments=remove` to strip blank `//` lines from the output.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
