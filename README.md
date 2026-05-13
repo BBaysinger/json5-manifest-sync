@@ -46,8 +46,7 @@ This tool solves that gap by letting you maintain both:
 - `package.json` as the canonical, machine-consumed manifest
 - `package.json5` as the human-documented companion file
 
-Then it synchronizes `package.json5` from `package.json` while preserving mapped `//` comments where possible.
-When values like `version`, `scripts`, or dependency versions change in `package.json`, those updates are propagated into `package.json5`.
+It synchronizes `package.json5` from the canonical `package.json`, preserving mapped `//` comments where possible and propagating changes to fields like `version`, `scripts`, and dependency versions.
 
 ## What it does
 
@@ -72,8 +71,6 @@ Package: https://www.npmjs.com/package/json5-manifest-sync
 Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 
 ## Install from npm (recommended)
-
-Package page: https://www.npmjs.com/package/json5-manifest-sync
 
 ```bash
 npm install --save-dev json5-manifest-sync
@@ -168,7 +165,7 @@ Example prompt:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "^0.1.3"
+    "json5-manifest-sync": "^0.2.1"
   }
 }
 ```
