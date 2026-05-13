@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.2] - 2026-05-13
+
+### Changed
+
+- Refined README wording so the npm package page explains sync behavior, blank-comment modes, and current limitations more clearly.
+- Added npm package discoverability improvements, including package metadata fields and a top-of-page npm badge/link.
+
 ## [0.2.1] - 2026-05-06
 
 ### Changed

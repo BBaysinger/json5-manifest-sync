@@ -166,7 +166,7 @@ Example prompt:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "^0.2.1"
+    "json5-manifest-sync": "^0.2.2"
   }
 }
 ```
