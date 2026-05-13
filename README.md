@@ -46,7 +46,8 @@ This tool solves that gap by letting you maintain both:
 - `package.json` as the canonical, machine-consumed manifest
 - `package.json5` as the human-documented companion file
 
-It synchronizes `package.json5` from the canonical `package.json`, preserving mapped `//` comments where possible and propagating changes to fields like `version`, `scripts`, and dependency versions.
+It synchronizes `package.json5` from the canonical `package.json` while preserving mapped `//` comments where possible.
+When values like `version`, `scripts`, or dependency versions change in `package.json`, those updates are propagated into `package.json5`.
 
 ## What it does
 
@@ -54,13 +55,13 @@ It synchronizes `package.json5` from the canonical `package.json`, preserving ma
 - Skips paths ignored by your root `.gitignore`
 - For each matching `package.json5`, rewrites values from canonical `package.json` (including `version`, scripts, dependencies, and other manifest fields)
 - Preserves/migrates mapped `//` comments for keys and supported array items
-- Supports three blank-comment modes: `preserve`, `fill`, and `remove`
+- Supports three blank-comment modes: `preserve` to keep blanks, `fill` to generate them, and `remove` to strip them
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
 
 ### Current limitations
 
 - Per-item comment preservation is most reliable for arrays of strings.
-- Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped.
+- Arrays of objects or numbers still serialize correctly, but item-level comments are less reliable and may be dropped during sync.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
