@@ -6,6 +6,14 @@
     "name": "Bradley Baysinger",
     "url": "https://github.com/BBaysinger"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BBaysinger/json5-manifest-sync.git"
+  },
+  "homepage": "https://github.com/BBaysinger/json5-manifest-sync#readme",
+  "bugs": {
+    "url": "https://github.com/BBaysinger/json5-manifest-sync/issues"
+  },
   "type": "module",
   "main": "./dist/json5-manifest-sync.js",
   "types": "./dist/json5-manifest-sync.d.ts",

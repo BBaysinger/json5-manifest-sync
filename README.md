@@ -1,5 +1,7 @@
 # json5-manifest-sync
 
+[![npm version](https://img.shields.io/npm/v/json5-manifest-sync)](https://www.npmjs.com/package/json5-manifest-sync)
+
 Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers, including `version` updates.
 
 ## Quick Start
@@ -63,11 +65,15 @@ When values like `version`, `scripts`, or dependency versions change in `package
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
 
+Package: https://www.npmjs.com/package/json5-manifest-sync
+
 ## Author
 
 Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 
 ## Install from npm (recommended)
+
+Package page: https://www.npmjs.com/package/json5-manifest-sync
 
 ```bash
 npm install --save-dev json5-manifest-sync

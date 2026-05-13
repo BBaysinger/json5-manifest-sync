@@ -12,6 +12,20 @@
     // Author or project homepage URL.
     "url": "https://github.com/BBaysinger",
   },
+  // Source repository metadata shown by registries and package managers.
+  "repository": {
+    // VCS used for the source repository.
+    "type": "git",
+    // Clone URL for the public source repository.
+    "url": "git+https://github.com/BBaysinger/json5-manifest-sync.git",
+  },
+  // Project homepage for package metadata and docs.
+  "homepage": "https://github.com/BBaysinger/json5-manifest-sync#readme",
+  // Issue tracker URL used by npm and consumers.
+  "bugs": {
+    // Public issue tracker for bug reports and support.
+    "url": "https://github.com/BBaysinger/json5-manifest-sync/issues",
+  },
   // ESM-only package.
   "type": "module",
   // Runtime entrypoint for Node.
