@@ -62,11 +62,9 @@ Alternatively, make `package.json5` authoritative for values and generate a stri
 
 - Per-item comment preservation is most reliable for arrays of strings.
 - Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped.
-- Use `--blank-comments=preserve` to keep existing blank `//` lines without adding new ones.
-- Use `--blank-comments=fill` to add blank `//` placeholders where comments are omitted.
-- Use `--blank-comments=remove` to strip blank `//` lines from the output.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
+
 Package: https://www.npmjs.com/package/json5-manifest-sync
 
 ## Author
