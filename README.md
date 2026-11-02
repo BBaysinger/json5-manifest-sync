@@ -6,8 +6,14 @@ pnpm supports `package.json5` natively, but other tools in a project’s scripts
 
 ## Quick Start
 
+Install with the package manager your project already uses:
+
 ```bash
 npm install --save-dev json5-manifest-sync
+```
+
+```bash
+pnpm add --save-dev json5-manifest-sync
 ```
 
 Add a script in your project's `package.json`:
@@ -39,12 +45,14 @@ This is also why the long-running Yarn Berry discussion about comment-friendly m
 > [!NOTE]
 > pnpm's native `package.json5` support is useful when pnpm controls the workflow, but it does not make `package.json5` universally recognized across npm, CI/CD, deployment, release, and other JavaScript tooling. This project keeps `package.json` available for compatibility while providing a documented companion file.
 
-The source of truth is configurable. By default:
+The source of truth for this tool is configurable. By default:
 
 - `package.json` is authoritative for manifest values.
 - `package.json5` is authoritative for comments; values are synchronized from `package.json` while mapped `//` comments are preserved where possible.
 
 Alternatively, make `package.json5` authoritative for values and generate a strict `package.json` for tools that need it. In this direction, comments remain in `package.json5`; they are not copied to `package.json`.
+
+**pnpm consideration:** pnpm has no setting or environment variable to prefer `package.json5` when both files exist. The `--source` option and `JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH` variable configure only this tool; they do not change pnpm's selection. When the two manifests are synchronized, this is straightforward: pnpm reads `package.json`, whose values match `package.json5`. If JSON5 is your source of truth, run this tool with `--source=package.json5` before pnpm operations that need the latest values. Pnpm commands may update `package.json`, so reconcile those changes into `package.json5` before syncing from JSON5 again, or they may be overwritten. Removing `package.json` lets pnpm read `package.json5` directly, but may break Node, npm, or other tools that require `package.json`.
 
 ## What it does
 
@@ -71,16 +79,32 @@ Package: https://www.npmjs.com/package/json5-manifest-sync
 
 Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
 
-## Install from npm (recommended)
+## Install from the npm registry (recommended)
+
+Use the package manager already used by your project so its lockfile stays consistent.
+
+With npm:
 
 ```bash
 npm install --save-dev json5-manifest-sync
+```
+
+With pnpm:
+
+```bash
+pnpm add --save-dev json5-manifest-sync
 ```
 
 Global install (optional):
 
 ```bash
 npm install -g json5-manifest-sync
+```
+
+Or with pnpm:
+
+```bash
+pnpm add --global json5-manifest-sync
 ```
 
 ## Install from GitHub (alternative)
