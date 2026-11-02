@@ -198,6 +198,164 @@ describe("runCli", () => {
     expect(updated).toContain('"build": "tsc -p tsconfig.json",');
   });
 
+  it("updates package.json from package.json5 when selected as the source", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-source-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const documentedManifest = `{
+  // Keep this explanation in the documented source.
+  "name": "consumer-app",
+  "version": '2.0.0',
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+  },
+}`;
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify({ name: "old-name" }));
+    fs.writeFileSync(packageJson5Path, documentedManifest);
+
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      runCli(["--source=package.json5"]);
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const updated = fs.readFileSync(packageJsonPath, "utf8");
+    expect(JSON.parse(updated)).toEqual({
+      name: "consumer-app",
+      version: "2.0.0",
+      scripts: { build: "tsc -p tsconfig.json" },
+    });
+    expect(updated).not.toContain("//");
+    expect(fs.readFileSync(packageJson5Path, "utf8")).toBe(documentedManifest);
+  });
+
+  it("creates package.json from package.json5 when the JSON file is missing", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-create-json-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+
+    fs.writeFileSync(
+      packageJson5Path,
+      `{
+  // Manifest for tools that require strict JSON.
+  name: 'consumer-app',
+  version: '2.0.0',
+  scripts: {
+    build: 'tsc -p tsconfig.json',
+  },
+}`,
+    );
+
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(tempDir);
+      runCli(["--source=package.json5"]);
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    expect(fs.existsSync(packageJsonPath)).toBe(true);
+    expect(JSON.parse(fs.readFileSync(packageJsonPath, "utf8"))).toEqual({
+      name: "consumer-app",
+      version: "2.0.0",
+      scripts: { build: "tsc -p tsconfig.json" },
+    });
+  });
+
+  it("loads the manifest source from the project .env file", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-env-source-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const previousCwd = process.cwd();
+    const previousSource = process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+
+    fs.writeFileSync(
+      path.join(tempDir, ".env"),
+      "JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH=package.json5\n",
+    );
+    fs.writeFileSync(
+      packageJson5Path,
+      "{ name: 'consumer-app', version: '2.0.0' }",
+    );
+
+    try {
+      delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      process.chdir(tempDir);
+      runCli([]);
+    } finally {
+      process.chdir(previousCwd);
+      if (previousSource === undefined) {
+        delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      } else {
+        process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH = previousSource;
+      }
+    }
+
+    expect(JSON.parse(fs.readFileSync(packageJsonPath, "utf8"))).toEqual({
+      name: "consumer-app",
+      version: "2.0.0",
+    });
+  });
+
+  it("lets the CLI source option override the .env setting", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-env-override-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const previousCwd = process.cwd();
+    const previousSource = process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+
+    fs.writeFileSync(
+      path.join(tempDir, ".env"),
+      "JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH=package.json5\n",
+    );
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify({ name: "canonical-name", version: "1.0.0" }),
+    );
+    fs.writeFileSync(
+      packageJson5Path,
+      "{ name: 'stale-name', version: '0.0.0' }",
+    );
+
+    try {
+      delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      process.chdir(tempDir);
+      runCli(["--source=package.json"]);
+    } finally {
+      process.chdir(previousCwd);
+      if (previousSource === undefined) {
+        delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      } else {
+        process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH = previousSource;
+      }
+    }
+
+    expect(fs.readFileSync(packageJson5Path, "utf8")).toContain(
+      '"name": "canonical-name",',
+    );
+  });
+
+  it("rejects an invalid manifest source without changing files", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    runCli(["--source=package.yaml"]);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Invalid source "package.yaml". Use --source=package.json or --source=package.json5.',
+    );
+    errorSpy.mockRestore();
+  });
+
   it("removes blank comments with blank-comments=remove", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-flags-"));
     const packageJsonPath = path.join(tempDir, "package.json");

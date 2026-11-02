@@ -1,8 +1,8 @@
 # json5-manifest-sync
 
-[![npm version](https://img.shields.io/npm/v/json5-manifest-sync)](https://www.npmjs.com/package/json5-manifest-sync)
+Keep `package.json` and a documented `package.json5` in sync. Choose either file as the source of truth: maintain comments in `package.json5` and generate strict JSON for tools that require it, or update the JSON5 companion from `package.json`.
 
-Keep a documented `package.json5` in sync with `package.json` used by Node, npm, CI/CD systems, and other package tooling, including `version` updates.
+pnpm supports `package.json5` natively, but other tools in a project’s scripts, CI/CD, publishing, or deployment workflows may still expect `package.json`. When both files exist, pnpm prefers `package.json`; it reads `package.json5` natively when `package.json` is absent. This tool bridges mixed toolchains by keeping both manifests synchronized in either direction.
 
 ## Quick Start
 
@@ -32,41 +32,41 @@ npm run sync:json5
 
 `package.json` is arguably the most important file in most JavaScript/TypeScript repositories. It drives install behavior, scripts, dependency policy, packaging, and release workflows—so it deserves clear inline documentation.
 
-At the same time, some tooling does not treat `package.json5` as a package manifest source. pnpm supports `package.json5` natively in supported workflows, but npm, Node-based tooling, legacy CI/CD environments, deployment systems, release tooling, and other ecosystem integrations may still require the conventional `package.json` filename. A companion `package.json5` approach provides documented manifests without giving up broad compatibility.
+Some tooling does not treat `package.json5` as a package manifest source. While pnpm supports it in supported workflows, npm, Node-based tooling, legacy CI/CD environments, deployment systems, release tooling, and other ecosystem integrations may still require the conventional `package.json` filename. A companion `package.json5` approach provides documented manifests without giving up broad compatibility.
 
 This is also why the long-running Yarn Berry discussion about comment-friendly manifests is relevant here: [yarnpkg/berry#241](https://github.com/yarnpkg/berry/issues/241) describes the same underlying need, along with the ecosystem compatibility constraints that make a companion `package.json5` approach useful today.
 
-There is also a long-running Stack Overflow discussion around the same practical question from the npm side: [How do I add comments to package.json for npm install?](https://stackoverflow.com/questions/14221579/how-do-i-add-comments-to-package-json-for-npm-install/79939348#79939348). It is a useful community reference for why teams keep reaching for comment-friendly manifest workflows even though `package.json` itself must remain strict JSON.
-
 > [!NOTE]
-> pnpm's native `package.json5` support is useful when pnpm controls the workflow, but it does not make `package.json5` universally recognized across npm, CI/CD, deployment, release, and other JavaScript tooling. This project keeps `package.json` available as the broadly compatible canonical manifest while providing a documented companion file.
+> pnpm's native `package.json5` support is useful when pnpm controls the workflow, but it does not make `package.json5` universally recognized across npm, CI/CD, deployment, release, and other JavaScript tooling. This project keeps `package.json` available for compatibility while providing a documented companion file.
 
-This tool solves that compatibility and documentation gap by letting you maintain both:
+The source of truth is configurable. By default:
 
-- `package.json` as the canonical, broadly compatible machine-consumed manifest
-- `package.json5` as the human-documented companion file
+- `package.json` is authoritative for manifest values.
+- `package.json5` is authoritative for comments; values are synchronized from `package.json` while mapped `//` comments are preserved where possible.
 
-It synchronizes `package.json5` from the canonical `package.json` while preserving mapped `//` comments where possible.
-When values like `version`, `scripts`, or dependency versions change in `package.json`, those updates are propagated into `package.json5`.
+Alternatively, make `package.json5` authoritative for values and generate a strict `package.json` for tools that need it. In this direction, comments remain in `package.json5`; they are not copied to `package.json`.
 
 ## What it does
 
 - Finds `package.json` files recursively (excluding `node_modules`)
 - Skips paths ignored by your root `.gitignore`
-- For each matching `package.json5`, rewrites values from canonical `package.json` (including `version`, scripts, dependencies, and other manifest fields)
+- Synchronizes each matching `package.json` / `package.json5` pair in either direction
+- By default, rewrites `package.json5` values from `package.json` (including `version`, scripts, dependencies, and other manifest fields)
+- With `--source=package.json5`, parses JSON5 and creates or updates a strict-JSON `package.json`
 - Preserves/migrates mapped `//` comments for keys and supported array items
-- Supports three blank-comment modes: `preserve` to keep blanks, `fill` to generate them, and `remove` to strip them
+- Supports three blank-comment modes: `preserve`, `fill`, and `remove`
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
 - Keeps a documented `package.json5` synchronized while retaining `package.json` compatibility for npm, legacy CI/CD, and other tooling that requires it
 
 ### Current limitations
 
 - Per-item comment preservation is most reliable for arrays of strings.
-- Arrays of objects or numbers still serialize correctly, but item-level comments are less reliable and may be dropped during sync.
+- Arrays of objects or numbers still serialize correctly, but item-level comments may be dropped.
+- Use `--blank-comments=preserve` to keep existing blank `//` lines without adding new ones.
+- Use `--blank-comments=fill` to add blank `//` placeholders where comments are omitted.
+- Use `--blank-comments=remove` to strip blank `//` lines from the output.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
-
-Package: https://www.npmjs.com/package/json5-manifest-sync
 
 ## Author
 
@@ -135,6 +135,29 @@ For the current full output style, see this repo's live example: [`package.json5
 
 By default, the tool runs with `--blank-comments=preserve`.
 
+Choose which manifest is authoritative with:
+
+- `--source=package.json` (default): update `package.json5` from `package.json`, preserving mapped JSON5 comments.
+- `--source=package.json5`: create or update `package.json` from `package.json5`; comments remain only in the JSON5 file.
+
+To retain the choice across runs, set `JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH` in the project-root `.env` file:
+
+```dotenv
+JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH=package.json5
+```
+
+An existing shell environment variable takes precedence over `.env`, and `--source=...` takes precedence over both. If the setting is omitted, the default remains `package.json`.
+
+For a project that has only `package.json5`, run the tool through `npx` (or install it globally) to generate the initial `package.json`—no pnpm installation is needed:
+
+```bash
+npx --yes --package=json5-manifest-sync json5-manifest-sync --source=package.json5
+```
+
+You cannot use a local `npm run` script or install this tool as a local dev dependency until `package.json` exists. Once generated, npm and other strict-JSON tools can use it. Note that commands such as `npm install` update `package.json`; reconcile those changes back into `package.json5` with the default `--source=package.json` mode before regenerating JSON from the JSON5 source, or those updates could be overwritten.
+
+Because pnpm prefers `package.json` when both files exist, it will read the generated JSON copy in that setup; it reads `package.json5` directly only when `package.json` is absent.
+
 Choose a blank-comment mode with one of the following:
 
 - `--blank-comments=preserve`
@@ -167,7 +190,7 @@ Example prompt:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "^0.2.2"
+    "json5-manifest-sync": "^0.1.3"
   }
 }
 ```

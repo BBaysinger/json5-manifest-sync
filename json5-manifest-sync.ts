@@ -3,6 +3,8 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import JSON5 from "json5";
+import { parse as parseDotenv } from "dotenv";
 
 import { sync as globSync } from "glob";
 import ignore from "ignore";
@@ -10,11 +12,11 @@ import ignore from "ignore";
 /**
  * JSON5 Package Synchronization Tool
  *
- * Synchronizes package.json5 files with their canonical package.json counterparts.
+ * Synchronizes paired package.json and package.json5 manifests in either direction.
  *
- * Source of truth: package.json (parsed as strict JSON).
- * Output: package.json5 rewritten with stable formatting and with *some* `//` comments
- * preserved/migrated onto the corresponding keys/items.
+ * By default, package.json is the source of manifest values and package.json5 is
+ * rewritten with stable formatting and with *some* `//` comments preserved/migrated.
+ * The CLI can instead use package.json5 as the source and generate package.json.
  *
  * Important: this script does NOT attempt to preserve arbitrary formatting (blank
  * lines, exact indentation, key ordering, etc.). It regenerates the JSON5 structure
@@ -36,6 +38,7 @@ import ignore from "ignore";
  */
 
 export type BlankCommentMode = "preserve" | "fill" | "remove";
+export type ManifestSource = "package.json" | "package.json5";
 
 export type SyncOptions = {
   /**
@@ -49,6 +52,10 @@ export type SyncOptions = {
    */
   blankCommentMode?: BlankCommentMode;
 };
+
+function isManifestSource(value: string): value is ManifestSource {
+  return value === "package.json" || value === "package.json5";
+}
 
 function isBlankCommentLine(line: string): boolean {
   return /^\s*\/\/\s*$/.test(line);
@@ -441,17 +448,17 @@ export function syncJson5(
 
 // 🔁 Main Execution Runner
 //
-// This section handles the file discovery and processing logic:
-// - Finds all package.json files in the project (excluding node_modules)
-// - Checks for corresponding package.json5 files
+// This section handles source-specific file discovery and processing:
+// - Finds the selected manifest type in the project (excluding node_modules)
+// - Checks for the counterpart when package.json is the source
 // - Applies root .gitignore rules to skip excluded files
 // - Performs synchronization for each valid pair
 
 /**
  * CLI entrypoint.
  *
- * Scans from the current working directory and synchronizes any
- * `package.json5` files that have a sibling `package.json`.
+ * Scans from the current working directory and synchronizes paired
+ * `package.json` and `package.json5` files in the selected direction.
  *
  * @param args - Optional CLI arguments (defaults to process argv slice)
  */
@@ -465,16 +472,27 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     ig.add(fs.readFileSync(gitignorePath, "utf8"));
   }
 
-  // Find all package.json files recursively, excluding node_modules
-  const packageJsonPaths = globSync("**/package.json", {
-    cwd: rootDir,
-    ignore: ["**/node_modules/**"],
-    absolute: true,
-  });
-
   // Parse CLI flags for options
   let blankCommentMode: BlankCommentMode = "preserve";
   let warnOnBlankComments = false;
+  const dotenvPath = path.join(rootDir, ".env");
+  const dotenvValues = fs.existsSync(dotenvPath)
+    ? parseDotenv(fs.readFileSync(dotenvPath))
+    : {};
+  const configuredSource =
+    process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH ??
+    dotenvValues.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH ??
+    "package.json";
+  let source: ManifestSource = "package.json";
+
+  if (isManifestSource(configuredSource)) {
+    source = configuredSource;
+  } else {
+    console.error(
+      `Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH "${configuredSource}". Use package.json or package.json5.`,
+    );
+    return;
+  }
 
   for (const arg of args) {
     if (arg.startsWith("--blank-comments=")) {
@@ -482,42 +500,71 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
       if (v === "preserve" || v === "fill" || v === "remove") {
         blankCommentMode = v;
       }
+    } else if (arg.startsWith("--source=")) {
+      const v = arg.slice("--source=".length);
+      if (isManifestSource(v)) {
+        source = v;
+      } else {
+        console.error(
+          `Invalid source "${v}". Use --source=package.json or --source=package.json5.`,
+        );
+        return;
+      }
     } else if (arg === "--warn-blank-comments") {
       warnOnBlankComments = true;
     }
   }
 
-  // Process each package.json to sync with its package.json5 counterpart
-  for (const packageJsonPath of packageJsonPaths) {
-    const relPath = path.relative(rootDir, packageJsonPath);
+  const sourcePattern =
+    source === "package.json" ? "**/package.json" : "**/package.json5";
+  const sourcePaths = globSync(sourcePattern, {
+    cwd: rootDir,
+    ignore: ["**/node_modules/**"],
+    absolute: true,
+  });
+
+  // Process each manifest using the selected source of truth.
+  for (const sourcePath of sourcePaths) {
+    const relPath = path.relative(rootDir, sourcePath);
 
     // Skip files that match gitignore patterns
     if (ig.ignores(relPath)) continue;
 
-    const json5Path = packageJsonPath + "5"; // package.json5
+    const packageJsonPath =
+      source === "package.json"
+        ? sourcePath
+        : path.join(path.dirname(sourcePath), "package.json");
+    const json5Path = source === "package.json" ? `${sourcePath}5` : sourcePath;
 
-    // Skip if no corresponding package.json5 exists
-    if (!fs.existsSync(json5Path)) {
+    // The default direction requires an existing JSON5 companion. In the
+    // reverse direction, package.json is created when it does not exist.
+    if (source === "package.json" && !fs.existsSync(json5Path)) {
       console.info(`⏩ Skipping ${relPath} — no package.json5 found`);
       continue;
     }
 
-    // Perform the synchronization
-    const rawJson5 = fs.readFileSync(json5Path, "utf8");
-    const sourceJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-    const updated = syncJson5(rawJson5, sourceJson, {
-      blankCommentMode,
-    });
+    if (source === "package.json") {
+      const rawJson5 = fs.readFileSync(json5Path, "utf8");
+      const sourceJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      const updated = syncJson5(rawJson5, sourceJson, {
+        blankCommentMode,
+      });
 
-    // Write the synchronized result
-    fs.writeFileSync(json5Path, updated);
-    console.info(`✅ Synced ${relPath} → ${path.basename(json5Path)}`);
+      fs.writeFileSync(json5Path, updated);
+      console.info(`✅ Synced ${relPath} → ${path.basename(json5Path)}`);
 
-    if (warnOnBlankComments && blankCommentMode !== "remove") {
-      warnAboutBlankComments(
-        json5Path,
-        collectBlankCommentLineNumbers(updated),
-      );
+      if (warnOnBlankComments && blankCommentMode !== "remove") {
+        warnAboutBlankComments(
+          json5Path,
+          collectBlankCommentLineNumbers(updated),
+        );
+      }
+    } else {
+      const sourceJson5 = JSON5.parse(fs.readFileSync(json5Path, "utf8"));
+      const updated = `${JSON.stringify(sourceJson5, null, 2)}\n`;
+
+      fs.writeFileSync(packageJsonPath, updated);
+      console.info(`✅ Synced ${path.basename(json5Path)} → ${relPath}`);
     }
   }
 }
