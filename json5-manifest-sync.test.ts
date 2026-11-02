@@ -198,6 +198,28 @@ describe("runCli", () => {
     expect(updated).toContain('"build": "tsc -p tsconfig.json",');
   });
 
+  it("does not rewrite package.json5 when synchronization produces no changes", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-noop-"));
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const source = { name: "consumer-app" };
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify(source, null, 2));
+    fs.writeFileSync(packageJson5Path, syncJson5("{}", source));
+
+    const previousCwd = process.cwd();
+    const writeSpy = vi.spyOn(fs, "writeFileSync");
+    try {
+      process.chdir(tempDir);
+      runCli(["--source=package.json"]);
+    } finally {
+      process.chdir(previousCwd);
+      writeSpy.mockRestore();
+    }
+
+    expect(writeSpy).not.toHaveBeenCalled();
+  });
+
   it("updates package.json from package.json5 when selected as the source", () => {
     const tempDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "json5-sync-source-"),
@@ -306,7 +328,7 @@ describe("runCli", () => {
     });
   });
 
-  it("lets the CLI source option override the .env setting", () => {
+  it("lets the CLI source option override a valid .env setting", () => {
     const tempDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "json5-sync-env-override-"),
     );
@@ -344,6 +366,47 @@ describe("runCli", () => {
     expect(fs.readFileSync(packageJson5Path, "utf8")).toContain(
       '"name": "canonical-name",',
     );
+  });
+
+  it("throws for an invalid .env source even when the CLI overrides it", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-invalid-env-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const previousCwd = process.cwd();
+    const previousSource = process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+
+    fs.writeFileSync(
+      path.join(tempDir, ".env"),
+      "JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH=invalid\n",
+    );
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify({ name: "canonical-name", version: "1.0.0" }),
+    );
+    fs.writeFileSync(
+      packageJson5Path,
+      "{ name: 'stale-name', version: '0.0.0' }",
+    );
+
+    try {
+      delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      process.chdir(tempDir);
+      expect(() => runCli(["--source=package.json"])).toThrowError(
+        'Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH in .env: "invalid". Expected "package.json" or "package.json5".',
+      );
+      expect(fs.readFileSync(packageJson5Path, "utf8")).toBe(
+        "{ name: 'stale-name', version: '0.0.0' }",
+      );
+    } finally {
+      process.chdir(previousCwd);
+      if (previousSource === undefined) {
+        delete process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH;
+      } else {
+        process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH = previousSource;
+      }
+    }
   });
 
   it("rejects an invalid manifest source without changing files", () => {

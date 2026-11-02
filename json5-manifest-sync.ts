@@ -38,7 +38,8 @@ import ignore from "ignore";
  */
 
 export type BlankCommentMode = "preserve" | "fill" | "remove";
-export type ManifestSource = "package.json" | "package.json5";
+export const manifestSourceOptions = ["package.json", "package.json5"] as const;
+export type ManifestSource = (typeof manifestSourceOptions)[number];
 
 export type SyncOptions = {
   /**
@@ -54,7 +55,23 @@ export type SyncOptions = {
 };
 
 function isManifestSource(value: string): value is ManifestSource {
-  return value === "package.json" || value === "package.json5";
+  return (manifestSourceOptions as readonly string[]).includes(value);
+}
+
+function describeManifestSources(): string {
+  return manifestSourceOptions.map((source) => `"${source}"`).join(" or ");
+}
+
+function writeFileIfChanged(filePath: string, content: string): boolean {
+  if (
+    fs.existsSync(filePath) &&
+    fs.readFileSync(filePath, "utf8") === content
+  ) {
+    return false;
+  }
+
+  fs.writeFileSync(filePath, content);
+  return true;
 }
 
 function isBlankCommentLine(line: string): boolean {
@@ -479,20 +496,30 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
   const dotenvValues = fs.existsSync(dotenvPath)
     ? parseDotenv(fs.readFileSync(dotenvPath))
     : {};
+  const sourceSettings = [
+    {
+      value: dotenvValues.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH,
+      location: ".env",
+    },
+    {
+      value: process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH,
+      location: "the process environment",
+    },
+  ];
+  const invalidSourceSetting = sourceSettings.find(
+    ({ value }) => value !== undefined && !isManifestSource(value),
+  );
+  if (invalidSourceSetting) {
+    throw new Error(
+      `Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH in ${invalidSourceSetting.location}: "${invalidSourceSetting.value}". Expected ${describeManifestSources()}.`,
+    );
+  }
+
   const configuredSource =
     process.env.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH ??
     dotenvValues.JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH ??
     "package.json";
-  let source: ManifestSource = "package.json";
-
-  if (isManifestSource(configuredSource)) {
-    source = configuredSource;
-  } else {
-    console.error(
-      `Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH "${configuredSource}". Use package.json or package.json5.`,
-    );
-    return;
-  }
+  let sourceOverride: ManifestSource | undefined;
 
   for (const arg of args) {
     if (arg.startsWith("--blank-comments=")) {
@@ -503,10 +530,10 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     } else if (arg.startsWith("--source=")) {
       const v = arg.slice("--source=".length);
       if (isManifestSource(v)) {
-        source = v;
+        sourceOverride = v;
       } else {
         console.error(
-          `Invalid source "${v}". Use --source=package.json or --source=package.json5.`,
+          `Invalid source "${v}". Use --source=${manifestSourceOptions.join(" or --source=")}.`,
         );
         return;
       }
@@ -514,6 +541,15 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
       warnOnBlankComments = true;
     }
   }
+
+  const configuredSourceValue = sourceOverride ?? configuredSource;
+  if (!isManifestSource(configuredSourceValue)) {
+    console.error(
+      `Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH "${configuredSourceValue}". Use ${manifestSourceOptions.join(" or ")}.`,
+    );
+    return;
+  }
+  const source = configuredSourceValue;
 
   const sourcePattern =
     source === "package.json" ? "**/package.json" : "**/package.json5";
@@ -550,8 +586,12 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
         blankCommentMode,
       });
 
-      fs.writeFileSync(json5Path, updated);
-      console.info(`✅ Synced ${relPath} → ${path.basename(json5Path)}`);
+      const changed = writeFileIfChanged(json5Path, updated);
+      console.info(
+        changed
+          ? `✅ Synced ${relPath} → ${path.basename(json5Path)}`
+          : `⏭️ Unchanged ${relPath} → ${path.basename(json5Path)}`,
+      );
 
       if (warnOnBlankComments && blankCommentMode !== "remove") {
         warnAboutBlankComments(
@@ -563,8 +603,12 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
       const sourceJson5 = JSON5.parse(fs.readFileSync(json5Path, "utf8"));
       const updated = `${JSON.stringify(sourceJson5, null, 2)}\n`;
 
-      fs.writeFileSync(packageJsonPath, updated);
-      console.info(`✅ Synced ${path.basename(json5Path)} → ${relPath}`);
+      const changed = writeFileIfChanged(packageJsonPath, updated);
+      console.info(
+        changed
+          ? `✅ Synced ${path.basename(json5Path)} → ${relPath}`
+          : `⏭️ Unchanged ${path.basename(json5Path)} → ${relPath}`,
+      );
     }
   }
 }
