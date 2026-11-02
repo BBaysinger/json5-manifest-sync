@@ -190,7 +190,7 @@ Example prompt:
 ```json
 {
   "dependencies": {
-    "json5-manifest-sync": "^0.1.3"
+    "json5-manifest-sync": "^0.3.0"
   }
 }
 ```

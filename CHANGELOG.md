@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.0] - 2026-11-02
+
+### Added
+
+- Added bidirectional synchronization with configurable `package.json` or `package.json5` source of truth.
+- Added `JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH` support in `.env` and the process environment.
+- Added JSON5-only project discovery and generation of a strict-JSON `package.json`.
+
+### Fixed
+
+- Report invalid source-of-truth environment values with a descriptive error.
+- Skip writes when synchronization produces unchanged content.
+
 ## [0.2.2] - 2026-05-13
 
 ### Changed
