@@ -67,6 +67,7 @@ Alternatively, make `package.json5` authoritative for values and generate a stri
 - Use `--blank-comments=remove` to strip blank `//` lines from the output.
 
 Repository: https://github.com/BBaysinger/json5-manifest-sync
+Package: https://www.npmjs.com/package/json5-manifest-sync
 
 ## Author
 
