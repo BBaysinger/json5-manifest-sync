@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/json5-manifest-sync)](https://www.npmjs.com/package/json5-manifest-sync)
 
-Keep a documented `package.json5` in sync with the real `package.json` used by Node and package managers, including `version` updates.
+Keep a documented `package.json5` in sync with `package.json` used by Node, npm, CI/CD systems, and other package tooling, including `version` updates.
 
 ## Quick Start
 
@@ -32,18 +32,18 @@ npm run sync:json5
 
 `package.json` is arguably the most important file in most JavaScript/TypeScript repositories. It drives install behavior, scripts, dependency policy, packaging, and release workflows—so it deserves clear inline documentation.
 
-At the same time, Node/npm/pnpm/yarn do not treat `package.json5` as a package manifest source. A JSON5 file can be great for human-readable documentation, but tooling still requires `package.json`.
+At the same time, some tooling does not treat `package.json5` as a package manifest source. pnpm supports `package.json5` natively in supported workflows, but npm, Node-based tooling, legacy CI/CD environments, deployment systems, release tooling, and other ecosystem integrations may still require the conventional `package.json` filename. A companion `package.json5` approach provides documented manifests without giving up broad compatibility.
 
 This is also why the long-running Yarn Berry discussion about comment-friendly manifests is relevant here: [yarnpkg/berry#241](https://github.com/yarnpkg/berry/issues/241) describes the same underlying need, along with the ecosystem compatibility constraints that make a companion `package.json5` approach useful today.
 
 There is also a long-running Stack Overflow discussion around the same practical question from the npm side: [How do I add comments to package.json for npm install?](https://stackoverflow.com/questions/14221579/how-do-i-add-comments-to-package-json-for-npm-install/79939348#79939348). It is a useful community reference for why teams keep reaching for comment-friendly manifest workflows even though `package.json` itself must remain strict JSON.
 
 > [!NOTE]
-> It would be great to see first-class support for JSON5-style manifests in npm/tooling over time, but today this project provides a practical bridge.
+> pnpm's native `package.json5` support is useful when pnpm controls the workflow, but it does not make `package.json5` universally recognized across npm, CI/CD, deployment, release, and other JavaScript tooling. This project keeps `package.json` available as the broadly compatible canonical manifest while providing a documented companion file.
 
-This tool solves that gap by letting you maintain both:
+This tool solves that compatibility and documentation gap by letting you maintain both:
 
-- `package.json` as the canonical, machine-consumed manifest
+- `package.json` as the canonical, broadly compatible machine-consumed manifest
 - `package.json5` as the human-documented companion file
 
 It synchronizes `package.json5` from the canonical `package.json` while preserving mapped `//` comments where possible.
@@ -57,6 +57,7 @@ When values like `version`, `scripts`, or dependency versions change in `package
 - Preserves/migrates mapped `//` comments for keys and supported array items
 - Supports three blank-comment modes: `preserve` to keep blanks, `fill` to generate them, and `remove` to strip them
 - Writes stable JSON5 formatting with trailing commas for cleaner diffs
+- Keeps a documented `package.json5` synchronized while retaining `package.json` compatibility for npm, legacy CI/CD, and other tooling that requires it
 
 ### Current limitations
 
