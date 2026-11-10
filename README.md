@@ -20,7 +20,8 @@ npx json5-manifest-sync --source=package.json5
 
 The tool can also work in the other direction: by default, it updates `package.json5` from `package.json`, preserving mapped `//` comments where possible.
 
-pnpm supports `package.json5` natively, but other tools in a project’s scripts, CI/CD, publishing, or deployment workflows may still expect `package.json`. When both files exist, pnpm prefers `package.json`; it reads `package.json5` natively when `package.json` is absent. This tool bridges mixed toolchains by keeping both manifests synchronized in either direction.
+> [!NOTE]
+> pnpm supports `package.json5` natively, but when both files exist it prefers `package.json`. Keeping the manifests synchronized makes this trivial: pnpm reads `package.json`, whose values match `package.json5`. Other tools in your scripts, CI/CD, publishing, or deployment workflows may also expect `package.json`.
 
 ## Quick Start
 
