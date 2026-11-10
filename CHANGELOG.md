@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.3] - 2026-11-09
+
+### Changed
+
+- Clarified pnpm's manifest selection behavior and how synchronized manifests keep package values aligned.
+
 ## [0.3.2] - 2026-11-09
 
 ### Changed
