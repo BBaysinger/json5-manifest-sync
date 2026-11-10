@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.4] - 2026-11-09
+
+### Changed
+
+- Simplified README installation guidance and removed repeated usage examples.
+
 ## [0.3.3] - 2026-11-09
 
 ### Changed

@@ -51,6 +51,28 @@ Run it:
 npm run sync:json5
 ```
 
+## Alternative installation methods
+
+Global install (optional):
+
+```bash
+npm install -g json5-manifest-sync
+```
+
+Or with pnpm:
+
+```bash
+pnpm add --global json5-manifest-sync
+```
+
+### Install from GitHub (alternative)
+
+Use this if you want an unreleased branch or tag:
+
+```bash
+npm install github:BBaysinger/json5-manifest-sync#main
+```
+
 ## Why this exists
 
 `package.json` must be strict JSON, which means comments are invalid. That makes it hard to document complex scripts, dependency choices, or workspace settings directly in the manifest.
@@ -60,9 +82,6 @@ npm run sync:json5
 Some tooling does not treat `package.json5` as a package manifest source. While pnpm supports it in supported workflows, npm, Node-based tooling, legacy CI/CD environments, deployment systems, release tooling, and other ecosystem integrations may still require the conventional `package.json` filename. A companion `package.json5` approach provides documented manifests without giving up broad compatibility.
 
 This is also why the long-running Yarn Berry discussion about comment-friendly manifests is relevant here: [yarnpkg/berry#241](https://github.com/yarnpkg/berry/issues/241) describes the same underlying need, along with the ecosystem compatibility constraints that make a companion `package.json5` approach useful today.
-
-> [!NOTE]
-> pnpm's native `package.json5` support is useful when pnpm controls the workflow, but it does not make `package.json5` universally recognized across npm, CI/CD, deployment, release, and other JavaScript tooling. This project keeps `package.json` available for compatibility while providing a documented companion file.
 
 The source of truth for this tool is configurable. By default:
 
@@ -101,65 +120,7 @@ Repository: https://github.com/BBaysinger/json5-manifest-sync
 
 Package: https://www.npmjs.com/package/json5-manifest-sync
 
-## Author
-
-Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
-
-## Install from the npm registry (recommended)
-
-Use the package manager already used by your project so its lockfile stays consistent.
-
-With npm:
-
-```bash
-npm install --save-dev json5-manifest-sync
-```
-
-With pnpm:
-
-```bash
-pnpm add --save-dev json5-manifest-sync
-```
-
-Global install (optional):
-
-```bash
-npm install -g json5-manifest-sync
-```
-
-Or with pnpm:
-
-```bash
-pnpm add --global json5-manifest-sync
-```
-
-## Install from GitHub (alternative)
-
-Use this if you want an unreleased branch or tag:
-
-```bash
-npm install github:BBaysinger/json5-manifest-sync#main
-```
-
-## Use in a project
-
-Add a script in your consuming project's `package.json`:
-
-```json
-{
-  "scripts": {
-    "sync:json5": "json5-manifest-sync"
-  }
-}
-```
-
-Run it:
-
-```bash
-npm run sync:json5
-```
-
-### Options
+## Options
 
 By default, the tool runs with `--blank-comments=preserve`.
 
@@ -184,7 +145,7 @@ npx --yes --package=json5-manifest-sync json5-manifest-sync --source=package.jso
 
 You cannot use a local `npm run` script or install this tool as a local dev dependency until `package.json` exists. Once generated, npm and other strict-JSON tools can use it. Note that commands such as `npm install` update `package.json`; reconcile those changes back into `package.json5` with the default `--source=package.json` mode before regenerating JSON from the JSON5 source, or those updates could be overwritten.
 
-Because pnpm prefers `package.json` when both files exist, it will read the generated JSON copy in that setup; it reads `package.json5` directly only when `package.json` is absent.
+In this setup, pnpm reads the generated `package.json`; it reads `package.json5` directly only when `package.json` is absent.
 
 Choose a blank-comment mode with one of the following:
 
@@ -217,16 +178,10 @@ Example prompt:
 
 > "Complete empty `//` comment lines in `package.json5` with concise, field-specific comments."
 
-## Example dependency block in consumer
-
-```json
-{
-  "dependencies": {
-    "json5-manifest-sync": "^0.3.0"
-  }
-}
-```
-
 ## Changelog
 
 See `CHANGELOG.md` for full release history.
+
+## Author
+
+Bradley Baysinger ([@BBaysinger](https://github.com/BBaysinger))
