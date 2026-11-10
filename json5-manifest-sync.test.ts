@@ -220,6 +220,94 @@ describe("runCli", () => {
     expect(writeSpy).not.toHaveBeenCalled();
   });
 
+  it("reports out-of-sync manifests without writing in check mode", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "json5-sync-check-"));
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const staleManifest = `{ "name": "old-name" }`;
+
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify({ name: "consumer-app" }, null, 2),
+    );
+    fs.writeFileSync(packageJson5Path, staleManifest);
+
+    const previousCwd = process.cwd();
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const writeSpy = vi.spyOn(fs, "writeFileSync");
+    let status = 0;
+    let output = "";
+    try {
+      process.chdir(tempDir);
+      status = runCli(["--check"]);
+      output = infoSpy.mock.calls.flat().join(" ");
+    } finally {
+      process.chdir(previousCwd);
+      infoSpy.mockRestore();
+      writeSpy.mockRestore();
+    }
+
+    expect(status).toBe(1);
+    expect(fs.readFileSync(packageJson5Path, "utf8")).toBe(staleManifest);
+    expect(writeSpy).not.toHaveBeenCalled();
+    expect(output).toContain("❌ Out of sync");
+  });
+
+  it("returns success in check mode when manifests are synchronized", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-check-ok-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    const source = { name: "consumer-app" };
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify(source, null, 2));
+    fs.writeFileSync(packageJson5Path, syncJson5("{}", source));
+
+    const previousCwd = process.cwd();
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const writeSpy = vi.spyOn(fs, "writeFileSync");
+    let status = 0;
+    let output = "";
+    try {
+      process.chdir(tempDir);
+      status = runCli(["--check"]);
+      output = infoSpy.mock.calls.flat().join(" ");
+    } finally {
+      process.chdir(previousCwd);
+      infoSpy.mockRestore();
+      writeSpy.mockRestore();
+    }
+
+    expect(status).toBe(0);
+    expect(writeSpy).not.toHaveBeenCalled();
+    expect(output).toContain("✅ In sync");
+  });
+
+  it("reports a missing package.json as out of sync when JSON5 is the source", () => {
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "json5-sync-check-missing-json-"),
+    );
+    const packageJsonPath = path.join(tempDir, "package.json");
+    const packageJson5Path = path.join(tempDir, "package.json5");
+    fs.writeFileSync(packageJson5Path, "{ name: 'consumer-app' }");
+
+    const previousCwd = process.cwd();
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    let output = "";
+    try {
+      process.chdir(tempDir);
+      expect(runCli(["--source=package.json5", "--check"])).toBe(1);
+      output = infoSpy.mock.calls.flat().join(" ");
+    } finally {
+      process.chdir(previousCwd);
+      infoSpy.mockRestore();
+    }
+
+    expect(fs.existsSync(packageJsonPath)).toBe(false);
+    expect(output).toContain("❌ Out of sync");
+  });
+
   it("updates package.json from package.json5 when selected as the source", () => {
     const tempDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "json5-sync-source-"),

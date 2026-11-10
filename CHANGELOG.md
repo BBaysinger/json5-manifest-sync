@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.7] - 2026-11-09
+
+### Added
+
+- Added a read-only `--check` mode for validating manifest synchronization in CI.
+
 ## [0.3.6] - 2026-11-09
 
 ### Changed

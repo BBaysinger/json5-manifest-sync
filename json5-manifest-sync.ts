@@ -479,7 +479,7 @@ export function syncJson5(
  *
  * @param args - Optional CLI arguments (defaults to process argv slice)
  */
-export function runCli(args: string[] = process.argv.slice(2)): void {
+export function runCli(args: string[] = process.argv.slice(2)): number {
   const rootDir = process.cwd();
   const ig = ignore();
   const gitignorePath = path.join(rootDir, ".gitignore");
@@ -492,6 +492,7 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
   // Parse CLI flags for options
   let blankCommentMode: BlankCommentMode = "preserve";
   let warnOnBlankComments = false;
+  let checkOnly = false;
   const dotenvPath = path.join(rootDir, ".env");
   const dotenvValues = fs.existsSync(dotenvPath)
     ? parseDotenv(fs.readFileSync(dotenvPath))
@@ -535,10 +536,12 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
         console.error(
           `Invalid source "${v}". Use --source=${manifestSourceOptions.join(" or --source=")}.`,
         );
-        return;
+        return 2;
       }
     } else if (arg === "--warn-blank-comments") {
       warnOnBlankComments = true;
+    } else if (arg === "--check") {
+      checkOnly = true;
     }
   }
 
@@ -547,9 +550,10 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
     console.error(
       `Invalid JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH "${configuredSourceValue}". Use ${manifestSourceOptions.join(" or ")}.`,
     );
-    return;
+    return 2;
   }
   const source = configuredSourceValue;
+  let hasOutOfSyncManifest = false;
 
   const sourcePattern =
     source === "package.json" ? "**/package.json" : "**/package.json5";
@@ -586,12 +590,22 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
         blankCommentMode,
       });
 
-      const changed = writeFileIfChanged(json5Path, updated);
-      console.info(
-        changed
-          ? `✅ Synced ${relPath} → ${path.basename(json5Path)}`
-          : `⏭️ Unchanged ${relPath} → ${path.basename(json5Path)}`,
-      );
+      if (checkOnly) {
+        const inSync = rawJson5 === updated;
+        if (!inSync) hasOutOfSyncManifest = true;
+        console.info(
+          inSync
+            ? `✅ In sync ${relPath} → ${path.basename(json5Path)}`
+            : `❌ Out of sync ${relPath} → ${path.basename(json5Path)}`,
+        );
+      } else {
+        const changed = writeFileIfChanged(json5Path, updated);
+        console.info(
+          changed
+            ? `✅ Synced ${relPath} → ${path.basename(json5Path)}`
+            : `⏭️ Unchanged ${relPath} → ${path.basename(json5Path)}`,
+        );
+      }
 
       if (warnOnBlankComments && blankCommentMode !== "remove") {
         warnAboutBlankComments(
@@ -603,14 +617,29 @@ export function runCli(args: string[] = process.argv.slice(2)): void {
       const sourceJson5 = JSON5.parse(fs.readFileSync(json5Path, "utf8"));
       const updated = `${JSON.stringify(sourceJson5, null, 2)}\n`;
 
-      const changed = writeFileIfChanged(packageJsonPath, updated);
-      console.info(
-        changed
-          ? `✅ Synced ${path.basename(json5Path)} → ${relPath}`
-          : `⏭️ Unchanged ${path.basename(json5Path)} → ${relPath}`,
-      );
+      const current = fs.existsSync(packageJsonPath)
+        ? fs.readFileSync(packageJsonPath, "utf8")
+        : undefined;
+      if (checkOnly) {
+        const inSync = current === updated;
+        if (!inSync) hasOutOfSyncManifest = true;
+        console.info(
+          inSync
+            ? `✅ In sync ${path.basename(json5Path)} → ${relPath}`
+            : `❌ Out of sync ${path.basename(json5Path)} → ${relPath}`,
+        );
+      } else {
+        const changed = writeFileIfChanged(packageJsonPath, updated);
+        console.info(
+          changed
+            ? `✅ Synced ${path.basename(json5Path)} → ${relPath}`
+            : `⏭️ Unchanged ${path.basename(json5Path)} → ${relPath}`,
+        );
+      }
     }
   }
+
+  return checkOnly && hasOutOfSyncManifest ? 1 : 0;
 }
 
 /**
@@ -641,5 +670,5 @@ export function isCliInvocation(
 }
 
 if (isCliInvocation()) {
-  runCli();
+  process.exitCode = runCli();
 }
