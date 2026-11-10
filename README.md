@@ -1,6 +1,6 @@
 # json5-manifest-sync
 
-Add comments to your npm package manifest in `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. Choose either file as the source of truth for manifest values; `package.json` always remains valid strict JSON.
+Document your npm package manifest with comments in a companion `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. Choose either file as the source of truth for manifest values; `package.json` always remains valid strict JSON.
 
 For example, document dependencies in `package.json5` and generate `package.json` from it:
 
@@ -21,7 +21,7 @@ npx json5-manifest-sync --source=package.json5
 The tool can also work in the other direction: by default, it updates `package.json5` from `package.json`, preserving mapped `//` comments where possible.
 
 > [!NOTE]
-> pnpm supports `package.json5` natively, but when both files exist it prefers `package.json`. Keeping the manifests synchronized makes this trivial: pnpm reads `package.json`, whose values match `package.json5`. Other tools in your scripts, CI/CD, publishing, or deployment workflows may also expect `package.json`.
+> pnpm supports `package.json5` natively, but when both files exist it prefers `package.json` (citation needed). Keeping the manifests synchronized makes this trivial: pnpm reads `package.json`, whose values match `package.json5`. Other tools in your scripts, CI/CD, publishing, or deployment workflows may also expect `package.json`.
 
 ## Quick Start
 
@@ -90,7 +90,7 @@ The source of truth for this tool is configurable. By default:
 
 Alternatively, make `package.json5` authoritative for values and generate a strict `package.json` for tools that need it. In this direction, comments remain in `package.json5`; they are not copied to `package.json`.
 
-**pnpm consideration:** pnpm has no setting or environment variable to prefer `package.json5` when both files exist. The `--source` option and `JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH` variable configure only this tool; they do not change pnpm's selection. When the two manifests are synchronized, this is straightforward: pnpm reads `package.json`, whose values match `package.json5`. If JSON5 is your source of truth, run this tool with `--source=package.json5` before pnpm operations that need the latest values. Pnpm commands may update `package.json`, so reconcile those changes into `package.json5` before syncing from JSON5 again, or they may be overwritten. Removing `package.json` lets pnpm read `package.json5` directly, but may break Node, npm, or other tools that require `package.json`.
+**pnpm consideration:** pnpm has no setting or environment variable to prefer `package.json5` when both files exist (citation needed). The `--source` option and `JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH` variable configure only this tool; they do not change pnpm's selection. When the two manifests are synchronized, this is straightforward: pnpm reads `package.json`, whose values match `package.json5`. If JSON5 is your source of truth, run this tool with `--source=package.json5` before pnpm operations that need the latest values. Pnpm commands may update `package.json`, so reconcile those changes into `package.json5` before syncing from JSON5 again, or they may be overwritten. Removing `package.json` lets pnpm read `package.json5` directly, but may break Node, npm, or other tools that require `package.json`.
 
 For CI or other automated workflows where `package.json5` is authoritative, run the sync as a separate step before pnpm reads the manifest. A lifecycle hook such as `preinstall` may run too late, after pnpm has already selected `package.json`:
 
@@ -137,15 +137,17 @@ JSON5_MANIFEST_SYNC_SOURCE_OF_TRUTH=package.json5
 
 An existing shell environment variable takes precedence over `.env`, and `--source=...` takes precedence over both. If the setting is omitted, the default remains `package.json`.
 
-For a project that has only `package.json5`, run the tool through `npx` (or install it globally) to generate the initial `package.json`—no pnpm installation is needed:
+If you use npm in a project that has only `package.json5`, run the tool through `npx` (or install it globally) to generate the initial `package.json`:
 
 ```bash
 npx --yes --package=json5-manifest-sync json5-manifest-sync --source=package.json5
 ```
 
-You cannot use a local `npm run` script or install this tool as a local dev dependency until `package.json` exists. Once generated, npm and other strict-JSON tools can use it. Note that commands such as `npm install` update `package.json`; reconcile those changes back into `package.json5` with the default `--source=package.json` mode before regenerating JSON from the JSON5 source, or those updates could be overwritten.
+Without `package.json`, npm cannot run project scripts or install local dev dependencies. pnpm supports `package.json5` directly, so you can install the tool with `pnpm add --save-dev json5-manifest-sync` and run `pnpm exec json5-manifest-sync --source=package.json5`. If you define a script in `package.json5`, include `--source=package.json5` in its command; the default direction reads `package.json`. Once generated, `package.json` is available to npm and other tools that require strict JSON.
 
-In this setup, pnpm reads the generated `package.json`; it reads `package.json5` directly only when `package.json` is absent.
+Commands such as `npm install` update `package.json`; reconcile those changes back into `package.json5` with the default `--source=package.json` mode before regenerating JSON from the JSON5 source, or those updates could be overwritten.
+
+In this setup, pnpm reads the generated `package.json`; it reads `package.json5` directly only when `package.json` is absent (citation needed).
 
 Choose a blank-comment mode with one of the following:
 

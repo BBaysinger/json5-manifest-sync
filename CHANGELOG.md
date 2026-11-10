@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.5] - 2026-11-09
+
+### Changed
+
+- Clarified the README's pnpm workflow for projects that start with only `package.json5`.
+- Marked pnpm manifest-precedence claims that still need a citation.
+
 ## [0.3.4] - 2026-11-09
 
 ### Changed
