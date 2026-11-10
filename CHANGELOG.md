@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.2] - 2026-11-09
+
+### Changed
+
+- Clarified the README's explanation and example for documenting npm package manifests with `package.json5`.
+
 ## [0.3.0] - 2026-11-02
 
 ### Added
