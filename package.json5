@@ -5,6 +5,31 @@
   "version": "0.3.7",
   // Short summary shown in package registries and tooling.
   "description": "Sync package.json and package.json5 manifests in either direction, preserving JSON5 comments where possible.",
+  //
+  "keywords": [
+    //
+    "package.json",
+    //
+    "package.json5",
+    //
+    "json5",
+    //
+    "npm",
+    //
+    "pnpm",
+    //
+    "manifest",
+    //
+    "sync",
+    //
+    "package-manifest",
+    //
+    "node",
+    //
+    "ci-cd",
+    //
+    "developer-tools",
+  ],
   // Package author metadata.
   "author": {
     // Author display name.

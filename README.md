@@ -1,7 +1,5 @@
 # json5-manifest-sync
 
-Keywords: package.json, package.json5, JSON5, npm, pnpm, manifest sync, package manifest, comments, Node.js, CI/CD, developer tooling
-
 Add comments to your package manifest in a companion `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. This works whether you use pnpm, which supports `package.json5` natively, or simply want a documented manifest while retaining compatibility with tools that require `package.json`. Choose either file as the source of truth for manifest values; `package.json` remains valid strict JSON.
 
 For example, document dependencies in `package.json5` and generate `package.json` for npm or other tools that require it:

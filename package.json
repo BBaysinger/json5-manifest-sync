@@ -2,6 +2,19 @@
   "name": "json5-manifest-sync",
   "version": "0.3.7",
   "description": "Sync package.json and package.json5 manifests in either direction, preserving JSON5 comments where possible.",
+  "keywords": [
+    "package.json",
+    "package.json5",
+    "json5",
+    "npm",
+    "pnpm",
+    "manifest",
+    "sync",
+    "package-manifest",
+    "node",
+    "ci-cd",
+    "developer-tools"
+  ],
   "author": {
     "name": "Bradley Baysinger",
     "url": "https://github.com/BBaysinger"
