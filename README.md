@@ -1,6 +1,24 @@
 # json5-manifest-sync
 
-Keep `package.json` and a documented `package.json5` in sync. Choose either file as the source of truth: maintain comments in `package.json5` and generate strict JSON for tools that require it, or update the JSON5 companion from `package.json`.
+Add comments to your npm package manifest in `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. Choose either file as the source of truth for manifest values; `package.json` always remains valid strict JSON.
+
+For example, document dependencies in `package.json5` and generate `package.json` from it:
+
+<!-- prettier-ignore -->
+```json5
+{
+  "dependencies": {
+    // Keep JSON5 parsing available to the CLI.
+    "json5": "^2.2.3",
+  },
+}
+```
+
+```bash
+npx json5-manifest-sync --source=package.json5
+```
+
+The tool can also work in the other direction: by default, it updates `package.json5` from `package.json`, preserving mapped `//` comments where possible.
 
 pnpm supports `package.json5` natively, but other tools in a project’s scripts, CI/CD, publishing, or deployment workflows may still expect `package.json`. When both files exist, pnpm prefers `package.json`; it reads `package.json5` natively when `package.json` is absent. This tool bridges mixed toolchains by keeping both manifests synchronized in either direction.
 
@@ -139,27 +157,6 @@ Run it:
 ```bash
 npm run sync:json5
 ```
-
-## Generated `package.json5` example
-
-Illustrative output (trimmed):
-
-<!-- prettier-ignore -->
-```json5
-{
-  // Package name used by npm and consumers.
-  "name": "consumer-app",
-  // Release version (keep in sync with git tags).
-  "version": "1.2.3",
-  // Development and release scripts.
-  "scripts": {
-    // Compile TypeScript to dist/.
-    "build": "tsc -p tsconfig.json",
-  },
-}
-```
-
-For the current full output style, see this repo's live example: [`package.json5`](./package.json5).
 
 ### Options
 
