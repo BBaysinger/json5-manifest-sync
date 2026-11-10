@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.6] - 2026-11-09
+
+### Changed
+
+- Reframed the README introduction around the documented companion-manifest use case.
+
 ## [0.3.5] - 2026-11-09
 
 ### Changed

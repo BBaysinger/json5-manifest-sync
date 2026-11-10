@@ -1,8 +1,8 @@
 # json5-manifest-sync
 
-Document your npm package manifest with comments in a companion `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. Choose either file as the source of truth for manifest values; `package.json` always remains valid strict JSON.
+Add comments to your package manifest in a companion `package.json5`, then sync it with the standard `package.json` expected by npm and other tools. This works whether you use pnpm, which supports `package.json5` natively, or simply want a documented manifest while retaining compatibility with tools that require `package.json`. Choose either file as the source of truth for manifest values; `package.json` remains valid strict JSON.
 
-For example, document dependencies in `package.json5` and generate `package.json` from it:
+For example, document dependencies in `package.json5` and generate `package.json` for npm or other tools that require it:
 
 <!-- prettier-ignore -->
 ```json5
