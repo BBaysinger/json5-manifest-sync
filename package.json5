@@ -2,7 +2,7 @@
   // Package name used by npm and consumers.
   "name": "json5-manifest-sync",
   // Release version (keep in sync with git tags).
-  "version": "0.3.0",
+  "version": "0.3.1",
   // Short summary shown in package registries and tooling.
   "description": "Sync package.json and package.json5 manifests in either direction, preserving JSON5 comments where possible.",
   // Package author metadata.
@@ -84,20 +84,24 @@
   },
   // Runtime dependencies required by the CLI.
   "dependencies": {
+    // Load environment variables from .env files.
+    "dotenv": "^18.0.10",
     // Fast file globbing for package.json discovery.
-    "glob": "^13.0.6",
+    "glob": "^14.0.4",
     // Apply .gitignore rules when scanning.
-    "ignore": "^7.0.5",
+    "ignore": "^7.0.14",
+    // Parse JSON5 manifest files.
+    "json5": "^2.2.3",
   },
   // Tooling dependencies used only for development.
   "devDependencies": {
     // Node type definitions for TypeScript.
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.6.6",
     // Code formatting tool.
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.10",
     // TypeScript compiler.
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     // Test runner.
-    "vitest": "^4.1.5",
+    "vitest": "^5.1.0",
   },
 }

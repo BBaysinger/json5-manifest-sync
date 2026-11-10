@@ -1,6 +1,6 @@
 {
   "name": "json5-manifest-sync",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Sync package.json and package.json5 manifests in either direction, preserving JSON5 comments where possible.",
   "author": {
     "name": "Bradley Baysinger",
@@ -47,14 +47,14 @@
   },
   "dependencies": {
     "dotenv": "^18.0.10",
-    "glob": "^13.0.6",
-    "ignore": "^7.0.5",
+    "glob": "^14.0.4",
+    "ignore": "^7.0.14",
     "json5": "^2.2.3"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "prettier": "^3.8.3",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "@types/node": "^26.6.6",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   }
 }
